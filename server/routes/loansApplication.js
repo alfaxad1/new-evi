@@ -297,16 +297,20 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
       return res.status(404).json({ error: "Loan product not found" });
     }
 
+    //calculate processing fee
+    const processingFee = (disbursedAmount * 3) / 100;
+
     const interestRate = product[0].interest_rate;
 
     // Calculate interest and total amount
     const interestAmount = disbursedAmount * (interestRate / 100);
-    const totalAmount = disbursedAmount + interestAmount;
+    const totalAmount = disbursedAmount + interestAmount + processingFee;
 
     console.log("Interest rate:", interestRate);
     console.log("Disbursed amount:", disbursedAmount);
     console.log("Interest amount:", interestAmount);
     console.log("Total amount:", totalAmount);
+    console.log("Processing fee:", processingFee);
 
     // Calculate installment amount and first due date
     let installmentAmount, firstDueDate;

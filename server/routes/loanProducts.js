@@ -127,7 +127,7 @@ router.post("/", validateLoanProduct, async (req, res) => {
       maxAmount,
       interestRate,
       durationDays,
-      processingFee = 0,
+
       isActive = true,
     } = req.body;
 
@@ -145,7 +145,7 @@ router.post("/", validateLoanProduct, async (req, res) => {
 
     const [result] = await connection.query(
       `INSERT INTO loan_products 
-      (name, description, min_amount, max_amount, interest_rate, duration_days, processing_fee, is_active)
+      (name, description, min_amount, max_amount, interest_rate, duration_days, is_active)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
@@ -154,7 +154,7 @@ router.post("/", validateLoanProduct, async (req, res) => {
         maxAmount,
         interestRate,
         durationDays,
-        processingFee,
+
         isActive,
       ]
     );

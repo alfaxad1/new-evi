@@ -34,6 +34,7 @@ interface Loan {
   installment_amount: number;
   arrears: number;
   installment_sum: number;
+  paid_amount: number;
 }
 const Loans = () => {
   const { isOpen, openModal, closeModal } = useModal();
@@ -259,7 +260,7 @@ const Loans = () => {
                       {loan.arrears}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.installment_sum}
+                      {loan.paid_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.remaining_balance}

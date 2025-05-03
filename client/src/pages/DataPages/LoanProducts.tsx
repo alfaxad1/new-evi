@@ -17,7 +17,7 @@ interface loanProduct {
   min_amount: string;
   max_amount: string;
   duration_days: number;
-  processing_fee: string;
+  
 }
 
 const LoanProducts = () => {
@@ -81,12 +81,7 @@ const LoanProducts = () => {
                   >
                     Duration
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Processing Fee
-                  </TableCell>
+                  
                 </TableRow>
               </TableHeader>
 
@@ -118,15 +113,7 @@ const LoanProducts = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {product.duration_days} days
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {parseInt(product.processing_fee).toLocaleString(
-                        "en-US",
-                        {
-                          style: "currency",
-                          currency: "Ksh",
-                        }
-                      )}
-                    </TableCell>
+                    
                   </TableRow>
                 ))}
               </TableBody>

@@ -13,7 +13,6 @@ interface productData {
   maxAmount: number;
   interestRate: number;
   durationDays: number;
-  processingFee: number;
 }
 
 const AddLoanProduct = () => {
@@ -24,7 +23,6 @@ const AddLoanProduct = () => {
     maxAmount: 0,
     interestRate: 0,
     durationDays: 30,
-    processingFee: 0,
   });
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -41,7 +39,6 @@ const AddLoanProduct = () => {
       maxAmount: 0,
       interestRate: 0,
       durationDays: 30,
-      processingFee: 0,
     });
   };
 
@@ -90,7 +87,7 @@ const AddLoanProduct = () => {
               onChange={(e) => handleChange(e)}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div>
               <Label htmlFor="min-amount">Minimum Amount</Label>
               <Input
@@ -131,16 +128,6 @@ const AddLoanProduct = () => {
               type="number"
               placeholder="Duration"
               name="durationDays"
-              onChange={(e) => handleChange(e)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="processing-fee">Processing Fee</Label>
-            <Input
-              value={formData.processingFee}
-              type="number"
-              placeholder="Processing Fee"
-              name="processingFee"
               onChange={(e) => handleChange(e)}
             />
           </div>

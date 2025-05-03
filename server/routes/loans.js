@@ -309,6 +309,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
     });
   }
 });
+
 // Get monthly active loans for a specific officer with deficit and percentage
 router.get("/monthly-active-loans", async (req, res) => {
   try {
@@ -385,6 +386,7 @@ router.get("/monthly-active-loans", async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve monthly active loans" });
   }
 });
+
 //disburse a loan
 router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
   const { mpesaCode } = req.body;
@@ -443,6 +445,7 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     res.status(500).json({ error: "Failed to disburse loan" });
   }
 });
+
 // Get loan by ID with full details
 router.get("/:id", async (req, res) => {
   try {
@@ -773,6 +776,7 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve loans due tomorrow" });
   }
 });
+
 //loans due 2-7 days
 router.get("/loan-details/due-2-7-days", async (req, res) => {
   try {

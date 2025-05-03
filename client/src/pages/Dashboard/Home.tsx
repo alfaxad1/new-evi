@@ -221,21 +221,25 @@ const Home = () => {
             </div>
 
             {/* Metric Item: Defaulted Loans */}
-            <div className="rounded-2xl border border-gray-300 bg-red-100 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-                <AlertTriangle className="text-gray-800 size-6 dark:text-white/90" />
-              </div>
-              <div className="flex items-end justify-between mt-5">
-                <div>
-                  <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Defaulted Loans
-                  </span>
-                  <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
-                    {counts.defaulted_loans}
-                  </h4>
+            {!show ? (
+              <div className="rounded-2xl border border-gray-300 bg-red-100 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+                <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                  <AlertTriangle className="text-gray-800 size-6 dark:text-white/90" />
+                </div>
+                <div className="flex items-end justify-between mt-5">
+                  <div>
+                    <span className="text-lg text-gray-500 dark:text-gray-400">
+                      Defaulted Loans
+                    </span>
+                    <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                      {counts.defaulted_loans}
+                    </h4>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              ""
+            )}
           </div>
         </div>
       </div>
