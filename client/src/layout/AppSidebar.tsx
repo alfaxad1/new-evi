@@ -71,13 +71,29 @@ if (role !== "admin") {
 }
 
 const othersItems: NavItem[] = [
+  role !== "officer"
+    ? {
+        icon: <RotateCcw />,
+        name: "Repayments",
+        subItems: [
+          {
+            name: "Pending Repayments",
+            path: "/pending-repayments",
+            pro: false,
+          },
+          {
+            name: "Approved Repayment",
+            path: "/approved-repayments",
+            pro: false,
+          },
+        ],
+      }
+    : undefined,
+
   {
     icon: <RotateCcw />,
     name: "Repayments",
-    subItems: [
-      { name: "Pending Repayments", path: "/pending-repayments", pro: false },
-      { name: "Approved Repayment", path: "/approved-repayments", pro: false },
-    ],
+    path: "/repayments",
   },
 
   {
@@ -88,12 +104,17 @@ const othersItems: NavItem[] = [
       { name: "All Products", path: "/loan-products", pro: false },
     ],
   },
+
   {
     icon: <BarChart />,
     name: "Reports",
     subItems: [
       { name: "Disbursements", path: "/monthly-active-loans", pro: false },
-      { name: "Collections", path: "/monthly-approved-repayments", pro: false },
+      {
+        name: "Collections",
+        path: "/monthly-approved-repayments",
+        pro: false,
+      },
     ],
   },
 
@@ -111,7 +132,7 @@ const othersItems: NavItem[] = [
         ]
       : [],
   },
-];
+].filter((item) => item !== undefined);
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
