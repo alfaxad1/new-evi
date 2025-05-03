@@ -42,11 +42,69 @@ const validateRepaymentData = (req, res, next) => {
 
   next();
 };
-//get all repayments of status pending with loan details
+
+// Get all repayments
+router.get("/", async (req, res) => {
+  try {
+    const { officerId, role, page = 1, limit = 10 } = req.query;
+    let sql = `
+      SELECT r.*, l.total_amount, l.status as loan_status,
+             c.id as customer_id,  
+             CONCAT(c.first_name, ' ', c.last_name) as customer_name
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      JOIN customers c ON l.customer_id = c.id
+    `;
+
+    const queryParams = [];
+
+    // Add filtering for officer role
+    if (role === "officer") {
+      sql += " WHERE l.officer_id = ?";
+      queryParams.push(officerId);
+    }
+
+    // Add pagination
+    const offset = (page - 1) * limit;
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
+
+    const [results] = await connection.query(sql, queryParams);
+
+    // Count the total number of repayments
+    let countSql = `
+      SELECT COUNT(*) as count
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      JOIN customers c ON l.customer_id = c.id
+    `;
+    const countQueryParams = [];
+    if (role === "officer") {
+      countSql += " WHERE l.officer_id = ?";
+      countQueryParams.push(officerId);
+    }
+
+    const [countResult] = await connection.query(countSql, countQueryParams);
+    const totalCount = countResult[0].count;
+
+    res.status(200).json({
+      count: totalCount,
+      data: results,
+      meta: {
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
+  } catch (err) {
+    console.error("Error getting repayments:", err);
+    res.status(500).json({ error: "Error getting repayments" });
+  }
+});
+
+// Get all pending repayments
 router.get("/pending", async (req, res) => {
   try {
-    const { officerId, role } = req.query; // Get officerId and role from query parameters
-
+    const { officerId, role, page = 1, limit = 10 } = req.query;
     let sql = `
       SELECT r.*, l.total_amount, l.status as loan_status,
              c.id as customer_id,  
@@ -65,14 +123,37 @@ router.get("/pending", async (req, res) => {
       queryParams.push(officerId);
     }
 
+    // Add pagination
+    const offset = (page - 1) * limit;
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
+
     const [results] = await connection.query(sql, queryParams);
 
-    // Count the number of pending repayments
-    const count = results.length;
+    // Count the total number of pending repayments
+    const countSql = `
+      SELECT COUNT(*) as count
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      JOIN customers c ON l.customer_id = c.id
+      WHERE r.status = 'pending'
+    `;
+    if (role === "officer") {
+      countSql += " AND l.officer_id = ?";
+    }
+    const [countResult] = await connection.query(
+      countSql,
+      role === "officer" ? [officerId] : []
+    );
+    const totalCount = countResult[0].count;
 
     res.status(200).json({
-      count,
+      count: totalCount,
       data: results,
+      meta: {
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
     });
   } catch (err) {
     console.error("Error getting pending repayments:", err);
@@ -80,46 +161,10 @@ router.get("/pending", async (req, res) => {
   }
 });
 
-//get all repayments
-router.get("/", async (req, res) => {
-  try {
-    const { officerId, role } = req.query;
-    let sql = `
-      SELECT r.*, l.total_amount, l.status as loan_status,
-             c.id as customer_id,  
-             CONCAT(c.first_name, ' ', c.last_name) as customer_name
-      FROM repayments r
-      JOIN loans l ON r.loan_id = l.id
-      JOIN customers c ON l.customer_id = c.id
-    `;
-
-    const queryParams = [];
-
-    // Add filtering for officer role
-    if (role === "officer") {
-      sql += " AND l.officer_id = ?";
-      queryParams.push(officerId);
-    }
-
-    const [results] = await connection.query(sql, queryParams);
-
-    // Count the number of approved repayments
-    const count = results.length;
-
-    res.status(200).json({
-      count,
-      data: results,
-    });
-  } catch (err) {
-    console.error("Error getting approved repayments:", err);
-    res.status(500).json({ error: "Error getting approved repayments" });
-  }
-});
-
-//approved repayments
+// Get all approved repayments
 router.get("/approved", async (req, res) => {
   try {
-    const { officerId, role } = req.query;
+    const { officerId, role, page = 1, limit = 10 } = req.query;
     let sql = `
       SELECT r.*, l.total_amount, l.status as loan_status,
              c.id as customer_id,  
@@ -138,14 +183,37 @@ router.get("/approved", async (req, res) => {
       queryParams.push(officerId);
     }
 
+    // Add pagination
+    const offset = (page - 1) * limit;
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
+
     const [results] = await connection.query(sql, queryParams);
 
-    // Count the number of approved repayments
-    const count = results.length;
+    // Count the total number of approved repayments
+    const countSql = `
+      SELECT COUNT(*) as count
+      FROM repayments r
+      JOIN loans l ON r.loan_id = l.id
+      JOIN customers c ON l.customer_id = c.id
+      WHERE r.status = 'paid'
+    `;
+    if (role === "officer") {
+      countSql += " AND l.officer_id = ?";
+    }
+    const [countResult] = await connection.query(
+      countSql,
+      role === "officer" ? [officerId] : []
+    );
+    const totalCount = countResult[0].count;
 
     res.status(200).json({
-      count,
+      count: totalCount,
       data: results,
+      meta: {
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
     });
   } catch (err) {
     console.error("Error getting approved repayments:", err);
