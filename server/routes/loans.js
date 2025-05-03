@@ -35,73 +35,73 @@ const validateLoanData = [
 ];
 
 // Get all loans with pagination and filters
-router.get("/", async (req, res) => {
-  try {
-    const { page = 1, limit = 10, status, customerId, officerId } = req.query;
-    const offset = (page - 1) * limit;
+// router.get("/", async (req, res) => {
+//   try {
+//     const { page = 1, limit = 10, status, customerId, officerId } = req.query;
+//     const offset = (page - 1) * limit;
 
-    let baseQuery = `
-      SELECT l.*, 
-        c.first_name as customer_first_name, 
-        c.last_name as customer_last_name,
-        u.first_name as officer_first_name,
-        u.last_name as officer_last_name,
-        lp.name as product_name
-      FROM loans l
-      JOIN customers c ON l.customer_id = c.id
-      JOIN users u ON l.officer_id = u.id
-      JOIN loan_applications la ON l.application_id = la.id
-      JOIN loan_products lp ON la.product_id = lp.id
-    `;
-    const whereClauses = [];
-    const queryParams = [];
+//     let baseQuery = `
+//       SELECT l.*,
+//         c.first_name as customer_first_name,
+//         c.last_name as customer_last_name,
+//         u.first_name as officer_first_name,
+//         u.last_name as officer_last_name,
+//         lp.name as product_name
+//       FROM loans l
+//       JOIN customers c ON l.customer_id = c.id
+//       JOIN users u ON l.officer_id = u.id
+//       JOIN loan_applications la ON l.application_id = la.id
+//       JOIN loan_products lp ON la.product_id = lp.id
+//     `;
+//     const whereClauses = [];
+//     const queryParams = [];
 
-    if (status) {
-      whereClauses.push("l.status = ?");
-      queryParams.push(status);
-    }
-    if (customerId) {
-      whereClauses.push("l.customer_id = ?");
-      queryParams.push(customerId);
-    }
-    if (officerId) {
-      whereClauses.push("l.officer_id = ?");
-      queryParams.push(officerId);
-    }
+//     if (status) {
+//       whereClauses.push("l.status = ?");
+//       queryParams.push(status);
+//     }
+//     if (customerId) {
+//       whereClauses.push("l.customer_id = ?");
+//       queryParams.push(customerId);
+//     }
+//     if (officerId) {
+//       whereClauses.push("l.officer_id = ?");
+//       queryParams.push(officerId);
+//     }
 
-    if (whereClauses.length > 0) {
-      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
-    }
+//     if (whereClauses.length > 0) {
+//       baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+//     }
 
-    // Get total count
-    const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-      queryParams
-    );
-    const total = countResult[0].total;
+//     // Get total count
+//     const [countResult] = await connection.query(
+//       `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+//       queryParams
+//     );
+//     const total = countResult[0].total;
 
-    // Add pagination and sorting
-    const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
-    const [loans] = await connection.query(finalQuery, [
-      ...queryParams,
-      parseInt(limit),
-      offset,
-    ]);
+//     // Add pagination and sorting
+//     const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
+//     const [loans] = await connection.query(finalQuery, [
+//       ...queryParams,
+//       parseInt(limit),
+//       offset,
+//     ]);
 
-    res.status(200).json({
-      data: loans,
-      meta: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (err) {
-    console.error("Error getting loans:", err);
-    res.status(500).json({ error: "Failed to retrieve loans" });
-  }
-});
+//     res.status(200).json({
+//       data: loans,
+//       meta: {
+//         page: parseInt(page),
+//         limit: parseInt(limit),
+//         total,
+//         totalPages: Math.ceil(total / limit),
+//       },
+//     });
+//   } catch (err) {
+//     console.error("Error getting loans:", err);
+//     res.status(500).json({ error: "Failed to retrieve loans" });
+//   }
+// });
 
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
@@ -838,6 +838,41 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
   } catch (err) {
     console.error("Error fetching loans due in 2-7 days:", err);
     res.status(500).json({ error: "Failed to retrieve loans due in 2-7 days" });
+  }
+});
+
+//get total disbusrsed loans for an officer on the current day
+router.get("/loan-details/disbursed-amount", async (req, res) => {
+  try {
+    const { officerId } = req.query;
+
+    const [officer] = await connection.query(
+      "SELECT id FROM users WHERE id = ? AND role = 'officer'",
+      [officerId]
+    );
+    if (officer.length === 0) {
+      return res.status(404).json({ error: "Loan officer not found" });
+    }
+
+    const sql = `
+      SELECT 
+        SUM(l.total_amount) as total_disbursed_amount
+      FROM loans l
+      WHERE l.officer_id = ?
+        AND l.status = 'active' OR l.status = 'partially_paid'
+        AND DATE(l.created_at) = CURDATE()
+    `;
+
+    const [result] = await connection.query(sql, [officerId]);
+
+    res.status(200).json({
+      total_disbursed_amount: result[0].total_disbursed_amount,
+    });
+  } catch (err) {
+    console.error("Error fetching officer disbursed amount:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve officer disbursed amount" });
   }
 });
 

@@ -29,7 +29,15 @@ const Home = () => {
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
-  const [counts, setCounts] = useState<Count | null>(null); // Initialize as null
+  const [counts, setCounts] = useState<Count | null>(null);
+  const [disbursed, setDisbursed] = useState(0);
+  const [show, setShow] = useState(true);
+
+  useEffect(() => {
+    if (role !== "officer") {
+      setShow(false);
+    }
+  }, [role]);
 
   const fetchLoans = async (role: string, officerId: string): Promise<void> => {
     try {
@@ -46,6 +54,22 @@ const Home = () => {
   useEffect(() => {
     fetchLoans(role, officerId);
   }, [role, officerId]);
+
+  const fetchDisbursed = async (officerId: string): Promise<void> => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/loans/loan-details/disbursed-amount?officerId=${officerId}`
+      );
+      console.log("Data fetched successfully:", response.data);
+      setDisbursed(response.data.total_disbursed_amount);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDisbursed(officerId);
+  }, [officerId]);
 
   if (!counts) {
     return <p>Loading...</p>; // Show a loading message while data is being fetched
@@ -74,7 +98,27 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Metric Item: Approved Loans */}
+            {show ? (
+              <div className="rounded-2xl border border-gray-300 bg-yellow-100 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+                <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                  <Clock1 className="text-gray-800 size-6 dark:text-white/90" />
+                </div>
+                <div className="flex items-end justify-between mt-5">
+                  <div>
+                    <span className="text-lg text-gray-500 dark:text-gray-400">
+                      Disbursed
+                    </span>
+                    <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                      Ksh. {Math.round(disbursed).toLocaleString()}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+            {/* Metric Item: Active Loans */}
             <div className="rounded-2xl border border-gray-300 bg-green-100 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
               <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
                 <CheckCircle className="text-gray-800 size-6 dark:text-white/90" />
