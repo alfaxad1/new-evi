@@ -1,5 +1,4 @@
-// Calculate remaining balance for a loan
-export const calculateRemainingBalance = async (loanId, connection) => {
+const calculateRemainingBalance = async (loanId, connection) => {
   const [results] = await connection.query(
     `
       SELECT 
@@ -19,8 +18,7 @@ export const calculateRemainingBalance = async (loanId, connection) => {
   return total_amount - total_paid;
 };
 
-// function to detect defaults
-export const checkLoanDefaults = async (connection) => {
+const checkLoanDefaults = async (connection) => {
   try {
     // Find loans past their expected completion date
     const [defaultedLoans] = await connection.query(`
@@ -45,8 +43,7 @@ export const checkLoanDefaults = async (connection) => {
   }
 };
 
-// Modified updateLoanStatus to include default checks
-export const updateLoanStatus = async (loanId, connection) => {
+const updateLoanStatus = async (loanId, connection) => {
   try {
     // Get loan details
     const [loan] = await connection.query("SELECT * FROM loans WHERE id = ?", [
@@ -90,6 +87,7 @@ export const updateLoanStatus = async (loanId, connection) => {
     } else {
       newStatus = "active";
     }
+
     // Update loan record
     await connection.query(
       `UPDATE loans 
@@ -106,8 +104,7 @@ export const updateLoanStatus = async (loanId, connection) => {
   }
 };
 
-//check for missed repayments
-export const checkMissedPayments = async (connection) => {
+const checkMissedPayments = async (connection) => {
   try {
     // Find loans with missed payments
     const [missedLoans] = await connection.query(`
@@ -116,7 +113,7 @@ export const checkMissedPayments = async (connection) => {
         installment_amount, 
         installment_type, 
         due_date, 
-        IFNULL(arrears, 0) AS arrears -- Ensure arrears is treated as 0 if null
+        IFNULL(arrears, 0) AS arrears
       FROM loans 
       WHERE status IN ('active', 'partially_paid') 
       AND due_date < CURDATE()
@@ -154,4 +151,11 @@ export const checkMissedPayments = async (connection) => {
     console.error("Error checking missed payments:", err);
     throw err;
   }
+};
+
+module.exports = {
+  calculateRemainingBalance,
+  checkLoanDefaults,
+  updateLoanStatus,
+  checkMissedPayments,
 };

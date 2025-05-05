@@ -1,11 +1,11 @@
-import express from "express";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import connection from "../config/dbConnection.js";
-import dotenv from "dotenv";
-import multer from "multer";
-import path from "path";
-import { authorizeRoles } from "../middleware/roleMiddleware.js";
+const express = require("express");
+const connection = require("../config/dbConnection");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const multer = require("multer");
+const path = require("path");
+const { authorizeRoles } = require("../middleware/roleMiddleware.js");
 dotenv.config();
 
 const router = express.Router();
@@ -88,7 +88,6 @@ router.get("/officers", async (req, res) => {
 });
 
 //get a user
-
 router.get("/:id", async (req, res) => {
   try {
     const [result] = await connection.query(
@@ -195,6 +194,13 @@ router.post("/login", async (req, res) => {
         const email = result[0].email;
         const id = result[0].id;
         const role = result[0].role;
+
+        // Update last_login field with current timestamp
+        await connection.query(
+          "UPDATE users SET last_login = NOW() WHERE id = ?",
+          [id]
+        );
+
         const token = jwt.sign({ id, role }, process.env.JWT_SECRET, {
           expiresIn: "1h",
         });
@@ -212,4 +218,4 @@ router.post("/login", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

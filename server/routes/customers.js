@@ -1,6 +1,6 @@
-import express from "express";
-import connection from "../config/dbConnection.js";
-import { body, validationResult } from "express-validator";
+const express = require("express");
+const connection = require("../config/dbConnection");
+const { body, validationResult } = require("express-validator");
 
 const router = express.Router();
 router.use(express.json());
@@ -123,7 +123,7 @@ router.get("/:id", async (req, res) => {
 // Delete a customer (with validation)
 router.delete("/:id", async (req, res) => {
   try {
-    await connection.beginTransaction();
+    //await connection.beginTransaction();
 
     // Check if customer has active loans
     const [activeLoans] = await connection.query(
@@ -132,7 +132,7 @@ router.delete("/:id", async (req, res) => {
     );
 
     if (activeLoans.length > 0) {
-      await connection.rollback();
+      //await connection.rollback();
       return res.status(400).json({
         error: "Cannot delete customer with active loans",
       });
@@ -155,4 +155,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

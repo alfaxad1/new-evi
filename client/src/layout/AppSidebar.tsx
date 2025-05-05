@@ -90,11 +90,13 @@ const othersItems: NavItem[] = [
       }
     : undefined,
 
-  {
-    icon: <RotateCcw />,
-    name: "Repayments",
-    path: "/repayments",
-  },
+  role !== "admin"
+    ? {
+        icon: <RotateCcw />,
+        name: "Repayments",
+        path: "/repayments",
+      }
+    : undefined,
 
   {
     icon: <Banknote />,

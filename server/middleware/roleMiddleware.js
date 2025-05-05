@@ -1,6 +1,6 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 
-export const authorizeRoles = (allowedRoles) => {
+const authorizeRoles = (allowedRoles) => {
   return (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -23,3 +23,5 @@ export const authorizeRoles = (allowedRoles) => {
     }
   };
 };
+
+module.exports = { authorizeRoles };

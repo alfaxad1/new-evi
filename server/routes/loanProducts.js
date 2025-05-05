@@ -1,6 +1,6 @@
-import express from "express";
-import connection from "../config/dbConnection.js";
-import { body, validationResult } from "express-validator";
+const express = require("express");
+const connection = require("../config/dbConnection");
+const { body, validationResult } = require("express-validator");
 
 const router = express.Router();
 router.use(express.json());
@@ -269,4 +269,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

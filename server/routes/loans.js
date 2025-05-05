@@ -1,7 +1,7 @@
-import express from "express";
-import connection from "../config/dbConnection.js";
-import { body, validationResult } from "express-validator";
-import { authorizeRoles } from "../middleware/roleMiddleware.js";
+const express = require("express");
+const connection = require("../config/dbConnection");
+const { body, validationResult } = require("express-validator");
+const { authorizeRoles } = require("../middleware/roleMiddleware.js");
 
 const router = express.Router();
 router.use(express.json());
@@ -357,19 +357,19 @@ router.get("/monthly-active-loans", async (req, res) => {
         SUM(l.total_amount) as total_amount_sum
       FROM loans l
       WHERE l.officer_id = ? 
-        AND l.status = 'active'
+        AND l.status = 'active' OR l.status = 'partially_paid'
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       `,
       [officerId, month, year]
     );
 
-    const totalAmountSum = summary[0].total_amount_sum || 0; // Ensure no null values
+    const totalAmountSum = summary[0].total_amount_sum || 0;
     const loanCount = summary[0].loan_count || 0;
 
     // Calculate deficit and percentage
     const deficit = targetAmount - totalAmountSum;
-    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); // Rounded to 2 decimal places
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2);
 
     res.status(200).json({
       loans,
@@ -396,7 +396,7 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
   }
 
   try {
-    await connection.beginTransaction();
+    //await connection.beginTransaction();
 
     // 1. Fetch the customer_id and total_amount associated with the loan
     const [loan] = await connection.query(
@@ -405,7 +405,7 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     );
 
     if (loan.length === 0) {
-      await connection.rollback();
+      //await connection.rollback();
       return res.status(400).json({
         error: "Loan not found or not in pending disbursement status",
       });
@@ -424,7 +424,7 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     );
 
     if (updateResult.affectedRows === 0) {
-      await connection.rollback();
+      //await connection.rollback();
       return res.status(400).json({
         error: "Failed to update loan status",
       });
@@ -437,10 +437,10 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
       [req.params.loanId, customerId, amount, mpesaCode, initiatedBy]
     );
 
-    await connection.commit();
+    //await connection.commit();
     res.status(200).json({ message: "Loan disbursed successfully" });
   } catch (err) {
-    await connection.rollback();
+    //await connection.rollback();
     console.error("Error disbursing loan:", err);
     res.status(500).json({ error: "Failed to disburse loan" });
   }
@@ -1038,4 +1038,4 @@ router.get("/loan-details/counts", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,7 +1,7 @@
-import express from "express";
-import connection from "../config/dbConnection.js";
-import { body, validationResult } from "express-validator";
-import { authorizeRoles } from "../middleware/roleMiddleware.js";
+const express = require("express");
+const connection = require("../config/dbConnection");
+const { body, validationResult } = require("express-validator");
+const { authorizeRoles } = require("../middleware/roleMiddleware.js");
 
 const router = express.Router();
 router.use(express.json());
@@ -274,7 +274,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
   }
 
   try {
-    await connection.beginTransaction();
+    //await connection.beginTransaction();
 
     // Get application details
     const [loan] = await connection.query("SELECT * FROM loans WHERE id = ?", [
@@ -355,12 +355,12 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
       [req.params.id]
     );
 
-    await connection.commit();
+    //await connection.commit();
     res.status(200).json({
       message: "Loan approved successfully and updated to pending disbursement",
     });
   } catch (err) {
-    await connection.rollback();
+    //await connection.rollback();
     console.error("Error approving loan:", err);
     res.status(500).json({ error: "Failed to approve loan" });
   }
@@ -523,4 +523,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

@@ -1,5 +1,5 @@
-import express from "express";
-import connection from "../config/dbConnection.js";
+const express = require("express");
+const connection = require("../config/dbConnection");
 
 const router = express.Router();
 router.use(express.json());
@@ -81,4 +81,4 @@ router.delete("/:id", (req, res) => {
   });
 });
 
-export default router;
+module.exports = router;

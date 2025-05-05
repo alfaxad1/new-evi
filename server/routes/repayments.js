@@ -1,11 +1,11 @@
-import express from "express";
-import connection from "../config/dbConnection.js";
-import {
+const express = require("express");
+const connection = require("../config/dbConnection");
+const {
   calculateRemainingBalance,
   checkMissedPayments,
   updateLoanStatus,
-} from "../services/loanService.js";
-import { checkLoanDefaults } from "../services/loanService.js";
+} = require("../services/loanService.js");
+const { checkLoanDefaults } = require("../services/loanService.js");
 
 const router = express.Router();
 router.use(express.json());
@@ -275,12 +275,12 @@ router.get("/monthly-approved", async (req, res) => {
       [officerId, month, year]
     );
 
-    const totalAmountSum = summary[0].total_amount_sum || 0; // Ensure no null values
+    const totalAmountSum = summary[0].total_amount_sum || 0; 
     const repaymentCount = summary[0].repayment_count || 0;
 
     // Calculate deficit and percentage
     const deficit = targetAmount - totalAmountSum;
-    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); // Rounded to 2 decimal places
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); 
 
     res.status(200).json({
       repayments,
@@ -330,7 +330,7 @@ router.post("/", validateRepaymentData, async (req, res) => {
   const { loanId, amount, mpesaCode } = req.body;
 
   try {
-    await connection.beginTransaction();
+    //await connection.beginTransaction();
 
     // Get loan details
     const [loan] = await connection.query("SELECT * FROM loans WHERE id = ?", [
@@ -381,10 +381,10 @@ router.post("/", validateRepaymentData, async (req, res) => {
       [loanId, amount, nextDueDate, mpesaCode, officer_id]
     );
 
-    await connection.commit();
+    //await connection.commit();
     res.status(200).json({ message: "Repayment recorded successfully" });
   } catch (err) {
-    await connection.rollback();
+    //await connection.rollback();
     console.error("Error recording repayment:", err);
     res.status(500).json({ error: "Failed to record repayment" });
   }
@@ -397,7 +397,7 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
     req.body;
 
   try {
-    await connection.beginTransaction();
+    //await connection.beginTransaction();
 
     // 1. Get current repayment data
     const [currentRepayment] = await connection.query(
@@ -406,7 +406,7 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
     );
 
     if (currentRepayment.length === 0) {
-      await connection.rollback();
+      //await connection.rollback();
       return res.status(404).json({ error: "Repayment not found" });
     }
 
@@ -440,13 +440,13 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
       await updateLoanStatus(loanId, connection);
     }
 
-    await connection.commit();
+    //await connection.commit();
 
     res.status(200).json({
       message: "Repayment updated successfully",
     });
   } catch (err) {
-    await connection.rollback();
+    //await connection.rollback();
     console.error("Error updating repayment:", err);
     res.status(500).json({ error: "Error updating repayment" });
   }
@@ -455,7 +455,7 @@ router.put("/:id", validateRepaymentData, async (req, res) => {
 // Delete a repayment (with loan status recalculation)
 router.delete("/:id", async (req, res) => {
   try {
-    await connection.beginTransaction();
+    //await connection.beginTransaction();
 
     // 1. Get repayment data before deletion
     const [repayment] = await connection.query(
@@ -464,7 +464,7 @@ router.delete("/:id", async (req, res) => {
     );
 
     if (repayment.length === 0) {
-      await connection.rollback();
+      //await connection.rollback();
       return res.status(404).json({ error: "Repayment not found" });
     }
 
@@ -481,13 +481,13 @@ router.delete("/:id", async (req, res) => {
       await updateLoanStatus(loanId, connection);
     }
 
-    await connection.commit();
+    //await connection.commit();
 
     res.status(200).json({
       message: "Repayment deleted successfully",
     });
   } catch (err) {
-    await connection.rollback();
+    //await connection.rollback();
     console.error("Error deleting repayment:", err);
     res.status(500).json({ error: "Error deleting repayment" });
   }
@@ -532,4 +532,4 @@ router.get("/:id/balance", async (req, res) => {
   }
 });
 
-export default router;
+module.exports = router;

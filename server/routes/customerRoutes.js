@@ -1,8 +1,7 @@
-// routes/customerRoutes.js
-import express from "express";
-import connection from "../config/dbConnection.js";
-import multer from "multer";
-import path from "path";
+const express = require("express");
+const connection = require("../config/dbConnection");
+const multer = require("multer");
+const path = require("path");
 const router = express.Router();
 router.use(express.json());
 
@@ -124,7 +123,7 @@ router.post(
       } = req.body;
 
       // Start transaction
-      await connection.beginTransaction();
+      //await connection.beginTransaction();
 
       // Insert customer
       const [customerResult] = await connection.query(
@@ -244,7 +243,7 @@ router.post(
         .status(201)
         .json({ message: "Customer created successfully", customerId });
     } catch (error) {
-      await connection.rollback();
+      //await connection.rollback();
       console.error("Error creating customer:", error);
       res.status(500).json({ error: "Failed to create customer" });
     }
@@ -322,4 +321,4 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch customer" });
   }
 });
-export default router;
+module.exports = router;

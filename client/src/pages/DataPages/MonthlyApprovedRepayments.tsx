@@ -90,7 +90,7 @@ const MonthlyApprovedRepayments = () => {
         <div className="mb-6">
           <div className="flex items-center mb-2 text-green-600">
             <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
-            <span>Total Disbursements: {summary.repayment_count}</span>
+            <span>Total Collections: {summary.repayment_count}</span>
           </div>
           <div className="flex items-center mb-2 text-blue-600">
             <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
