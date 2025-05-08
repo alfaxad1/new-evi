@@ -304,7 +304,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
 
     // Calculate interest and total amount
     const interestAmount = disbursedAmount * (interestRate / 100);
-    const totalAmount = disbursedAmount + interestAmount + processingFee;
+    const totalAmount = disbursedAmount + interestAmount;
 
     console.log("Interest rate:", interestRate);
     console.log("Disbursed amount:", disbursedAmount);
@@ -328,6 +328,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     const [loanUpdateResult] = await connection.query(
       `UPDATE loans 
       SET principal = ?, 
+          processing_fee = ?,
           total_interest = ?, 
           total_amount = ?, 
           installment_amount = ?, 
@@ -336,10 +337,10 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
       WHERE id = ?`,
       [
         disbursedAmount,
+        processingFee,
         interestAmount,
         totalAmount,
         installmentAmount,
-
         firstDueDate,
         req.params.id,
       ]

@@ -35,6 +35,7 @@ interface Loan {
   arrears: number;
   installment_sum: number;
   paid_amount: number;
+  processing_fee: number;
 }
 const Loans = () => {
   const { isOpen, openModal, closeModal } = useModal();
