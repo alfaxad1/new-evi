@@ -34,6 +34,8 @@ import { MonthlyActiveLoans } from "./pages/DataPages/MonthlyActiveLoans";
 import AuthenticatedMonthlyApprovedRepayments from "./pages/DataPages/MonthlyApprovedRepayments";
 import { AllUsers } from "./pages/DataPages/AllUsers";
 import { AllRepayments } from "./pages/DataPages/AllRepayments";
+import { CompanyMonthlyDisbursements } from "./pages/DataPages/CompanyMonthlyDisbursements";
+import { CompanyMonthlyCollections } from "./pages/DataPages/CompanyMonthlyCollections";
 
 export default function App() {
   return (
@@ -101,9 +103,15 @@ export default function App() {
               path="/monthly-approved-repayments"
               element={<AuthenticatedMonthlyApprovedRepayments />}
             />
+            <Route
+              path="/company-monthly-disbursements"
+              element={<CompanyMonthlyDisbursements />}
+            />
+            <Route
+              path="/company-monthly-collections"
+              element={<CompanyMonthlyCollections />}
+            />
           </Route>
-
-          {/* Not Found */}
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />

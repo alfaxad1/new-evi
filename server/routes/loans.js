@@ -334,7 +334,7 @@ router.get("/monthly-active-loans", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.officer_id = ? 
-        AND l.status = 'active'
+        AND l.status = 'active' OR l.status = 'partially_paid' OR l.status = 'paid'
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       ORDER BY l.disbursement_date DESC
@@ -350,19 +350,19 @@ router.get("/monthly-active-loans", async (req, res) => {
         SUM(l.total_amount) as total_amount_sum
       FROM loans l
       WHERE l.officer_id = ? 
-        AND l.status = 'active' OR l.status = 'partially_paid'
+        AND l.status = 'active' OR l.status = 'partially_paid' OR l.status = 'paid'
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       `,
       [officerId, month, year]
     );
 
-    const totalAmountSum = summary[0].total_amount_sum || 0;
+    const totalAmountSum = summary[0].total_amount_sum || 0; // Ensure no null values
     const loanCount = summary[0].loan_count || 0;
 
     // Calculate deficit and percentage
     const deficit = targetAmount - totalAmountSum;
-    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2);
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); // Rounded to 2 decimal places
 
     res.status(200).json({
       loans,
@@ -377,6 +377,92 @@ router.get("/monthly-active-loans", async (req, res) => {
   } catch (err) {
     console.error("Error fetching monthly active loans:", err);
     res.status(500).json({ error: "Failed to retrieve monthly active loans" });
+  }
+});
+
+//admin
+router.get("/monthly-active-loans-admin", async (req, res) => {
+  try {
+    const { officerId, month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        error: "Month and year are required",
+      });
+    }
+
+    // Check if user is admin
+    const [user] = await connection.query(
+      "SELECT * FROM users WHERE id = ? AND role = 'admin'",
+      [officerId]
+    );
+
+    if (!user) {
+      return res.status(401).json({
+        error: "Unauthorized access",
+      });
+    }
+
+    // Query to get all officers with their total active loans
+    const [officers] = await connection.query(
+      `
+      SELECT 
+        u.id,
+        u.first_name,
+        u.last_name,
+        COUNT(l.id) as loan_count,
+        SUM(l.total_amount) as total_amount_sum
+      FROM users u
+      LEFT JOIN loans l ON u.id = l.officer_id
+      WHERE u.role = 'officer'
+        AND l.status = 'active' OR l.status = 'partially_paid' OR l.status = 'paid'
+        AND MONTH(l.disbursement_date) = ?
+        AND YEAR(l.disbursement_date) = ?
+      GROUP BY u.id, u.first_name, u.last_name
+      `,
+      [month, year]
+    );
+
+    // Calculate summary for all officers
+    const [allOfficersSummary] = await connection.query(
+      `
+      SELECT 
+        COUNT(*) as loan_count,
+        SUM(l.total_amount) as total_amount_sum
+      FROM loans l
+      WHERE l.status = 'active' OR l.status = 'partially_paid'
+        AND MONTH(l.disbursement_date) = ?
+        AND YEAR(l.disbursement_date) = ?
+      `,
+      [month, year]
+    );
+
+    const allOfficersTotalAmountSum =
+      allOfficersSummary[0].total_amount_sum || 0;
+    const allOfficersLoanCount = allOfficersSummary[0].loan_count || 0;
+
+    // Calculate target amount and percentage
+    const targetAmount = 700000;
+    const totalAmountSum = officers.reduce(
+      (acc, officer) => acc + (officer.total_amount_sum || 0),
+      0
+    );
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2);
+
+    res.status(200).json({
+      officers,
+      summary: {
+        loan_count: allOfficersLoanCount,
+        total_amount_sum: allOfficersTotalAmountSum,
+        target_amount: targetAmount,
+        percentage: `${percentage}%`,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching monthly active loans for admins:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve monthly active loans for admins" });
   }
 });
 

@@ -120,6 +120,25 @@ const othersItems: NavItem[] = [
     ],
   },
 
+  role !== "officer"
+    ? {
+        icon: <BarChart />,
+        name: "Company Reports",
+        subItems: [
+          {
+            name: "Disbursements",
+            path: "/company-monthly-disbursements",
+            pro: false,
+          },
+          {
+            name: "Collections",
+            path: "/company-monthly-collections",
+            pro: false,
+          },
+        ],
+      }
+    : undefined,
+
   {
     icon: <Users />,
     name: "Users",

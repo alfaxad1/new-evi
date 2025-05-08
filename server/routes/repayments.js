@@ -335,34 +335,38 @@ router.get("/monthly-approved-admin", async (req, res) => {
       });
     }
 
-    // If officerId is provided, filter results for that officer
-    let whereClause =
-      "WHERE r.status = 'paid' AND MONTH(r.paid_date) = ? AND YEAR(r.paid_date) = ?";
-    let params = [month, year];
-
-    if (officerId) {
-      whereClause += " AND l.officer_id = ?";
-      params.push(officerId);
-    }
-
-    // Query to get all officers with their monthly approved repayments
+    // Query to get all officers with their total approved loan amounts
     const [officers] = await connection.query(
       `
       SELECT 
-        o.id,
-        o.first_name,
-        o.last_name,
-        SUM(r.amount) as total_amount_sum
-      FROM users o
-      JOIN loans l ON o.id = l.officer_id
-      JOIN repayments r ON l.id = r.loan_id
-      ${whereClause}
-      GROUP BY o.id, o.first_name, o.last_name
+        u.id,
+        u.first_name,
+        u.last_name,
+        COUNT(r.id) as number,
+        COALESCE(SUM(r.amount), 0) as total_amount_sum
+      FROM users u
+      LEFT JOIN loans l ON u.id = l.officer_id
+      LEFT JOIN repayments r ON l.id = r.loan_id
+      WHERE u.role = 'officer'
+        AND r.status = 'paid'
+        AND MONTH(r.paid_date) = ?
+        AND YEAR(r.paid_date) = ?
+      GROUP BY u.id, u.first_name, u.last_name
       `,
-      params
+      [month, year]
     );
 
-    res.status(200).json(officers);
+    // Calculate summary
+    const summary = officers.reduce(
+      (acc, officer) => {
+        acc.total_amount_sum += parseFloat(officer.total_amount_sum);
+        acc.number += officer.number;
+        return acc;
+      },
+      { total_amount_sum: 0, number: 0 }
+    );
+
+    res.status(200).json({ officers, summary });
   } catch (err) {
     console.error(
       "Error fetching monthly approved repayments for admins:",
