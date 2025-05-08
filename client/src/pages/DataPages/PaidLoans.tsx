@@ -104,12 +104,7 @@ const PaidLoans = () => {
                   >
                     Loan Product
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Purpose
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -122,12 +117,7 @@ const PaidLoans = () => {
                   >
                     Loan Amount
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Balance
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -147,18 +137,14 @@ const PaidLoans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.loan_product}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.purpose}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.principal}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.total_amount}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.remaining_balance}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <span
                         style={{

@@ -232,6 +232,18 @@ router.get("/monthly-approved", async (req, res) => {
       });
     }
 
+    // Check if officer exists and has role "officer"
+    const [user] = await connection.query(
+      "SELECT * FROM users WHERE id = ? AND role = 'officer'",
+      [officerId]
+    );
+
+    if (!user) {
+      return res.status(401).json({
+        error: "Unauthorized access",
+      });
+    }
+
     const targetAmount = 700000; // Target total amount
 
     // Query to get approved repayments for the specified officer, month, and year
@@ -275,12 +287,12 @@ router.get("/monthly-approved", async (req, res) => {
       [officerId, month, year]
     );
 
-    const totalAmountSum = summary[0].total_amount_sum || 0; 
+    const totalAmountSum = summary[0].total_amount_sum || 0;
     const repaymentCount = summary[0].repayment_count || 0;
 
     // Calculate deficit and percentage
     const deficit = targetAmount - totalAmountSum;
-    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); 
+    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2);
 
     res.status(200).json({
       repayments,
@@ -297,6 +309,68 @@ router.get("/monthly-approved", async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to retrieve monthly approved repayments" });
+  }
+});
+
+//admin
+router.get("/monthly-approved-admin", async (req, res) => {
+  try {
+    const { officerId, month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({
+        error: "Month and year are required",
+      });
+    }
+
+    // Check if user is admin
+    const [user] = await connection.query(
+      "SELECT * FROM users WHERE id = ? AND role = 'admin'",
+      [officerId]
+    );
+
+    if (!user) {
+      return res.status(401).json({
+        error: "Unauthorized access",
+      });
+    }
+
+    // If officerId is provided, filter results for that officer
+    let whereClause =
+      "WHERE r.status = 'paid' AND MONTH(r.paid_date) = ? AND YEAR(r.paid_date) = ?";
+    let params = [month, year];
+
+    if (officerId) {
+      whereClause += " AND l.officer_id = ?";
+      params.push(officerId);
+    }
+
+    // Query to get all officers with their monthly approved repayments
+    const [officers] = await connection.query(
+      `
+      SELECT 
+        o.id,
+        o.first_name,
+        o.last_name,
+        SUM(r.amount) as total_amount_sum
+      FROM users o
+      JOIN loans l ON o.id = l.officer_id
+      JOIN repayments r ON l.id = r.loan_id
+      ${whereClause}
+      GROUP BY o.id, o.first_name, o.last_name
+      `,
+      params
+    );
+
+    res.status(200).json(officers);
+  } catch (err) {
+    console.error(
+      "Error fetching monthly approved repayments for admins:",
+      err
+    );
+    res.status(500).json({
+      error: "Failed to retrieve monthly approved repayments for admins",
+    });
   }
 });
 

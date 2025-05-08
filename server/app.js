@@ -8,15 +8,15 @@ dotenv.config();
 const app = express();
 //const __dirname = path.resolve();
 
-const corsOptions = {
-  origin: "https://app.eviltd.co.ke", // Replace with the URL you want to whitelist
-  methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
-  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-  credentials: true, // Allow credentials (e.g., cookies, auth headers)
-};
+// const corsOptions = {
+//   origin: "https://app.eviltd.co.ke",
+//   methods: ["GET", "POST", "PUT", "DELETE"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   credentials: true,
+// };
 
 // Middlewares
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

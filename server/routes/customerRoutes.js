@@ -33,63 +33,7 @@ const upload = multer({
   },
 });
 
-// Get all customers with pagination and filtering by creator
-router.get("/", async (req, res) => {
-  try {
-    const { page = 1, limit = 10, created_by } = req.query;
-    const offset = (page - 1) * limit;
-
-    let baseQuery = `
-      SELECT 
-        id, first_name, middle_name, last_name, phone, national_id, 
-        date_of_birth, gender, address, county, occupation, 
-        business_name, business_location, residence_details, 
-        monthly_income, credit_score, created_by, national_id_photo, passport_photo
-      FROM customers
-    `;
-
-    const whereClauses = [];
-    const queryParams = [];
-
-    // Filter by created_by if provided
-    if (created_by) {
-      whereClauses.push("created_by = ?");
-      queryParams.push(created_by);
-    }
-
-    if (whereClauses.length > 0) {
-      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
-    }
-
-    // Get total count for pagination
-    const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-      queryParams
-    );
-    const total = countResult[0].total;
-
-    // Add pagination
-    const finalQuery = `${baseQuery} ORDER BY id DESC LIMIT ? OFFSET ?`;
-    const [customers] = await connection.query(finalQuery, [
-      ...queryParams,
-      parseInt(limit),
-      parseInt(offset),
-    ]);
-
-    res.status(200).json({
-      data: customers,
-      meta: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching customers:", error);
-    res.status(500).json({ error: "Failed to fetch customers" });
-  }
-});
+const url = "https://localhost";
 
 // Create new customer with photo uploads
 router.post(
@@ -151,10 +95,10 @@ router.post(
           credit_score || 0,
           created_by,
           req.files["national_id_photo"]
-            ? req.files["national_id_photo"][0].path
+            ? `${url}/${req.files["national_id_photo"][0].path}`
             : null,
           req.files["passport_photo"]
-            ? req.files["passport_photo"][0].path
+            ? `${url}/${req.files["passport_photo"][0].path}`
             : null,
         ]
       );
@@ -199,11 +143,18 @@ router.post(
       // Insert guarantors if provided
       if (req.body.guarantors && req.body.guarantors.length > 0) {
         for (const guarantor of req.body.guarantors) {
+          const guarantorIdPhotoPath = req.files["guarantor_id_photo_0"]
+            ? `${url}/${req.files["guarantor_id_photo_0"][0].path}`
+            : null;
+          const guarantorPassPhotoPath = req.files["guarantor_pass_photo_0"]
+            ? `${url}/${req.files["guarantor_pass_photo_0"][0].path}`
+            : null;
+
           const [guarantorResult] = await connection.query(
             `INSERT INTO guarantors 
-          (customer_id, name, id_number, phone_number, relationship, 
-           business_location, residence_details, id_photo, pass_photo)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (customer_id, name, id_number, phone_number, relationship, 
+       business_location, residence_details, id_photo, pass_photo)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               customerId,
               guarantor.name,
@@ -212,8 +163,8 @@ router.post(
               guarantor.relationship,
               guarantor.business_location,
               guarantor.residence_details,
-              guarantor.id_photo_path,
-              guarantor.pass_photo_path,
+              guarantorIdPhotoPath,
+              guarantorPassPhotoPath,
             ]
           );
 
@@ -224,8 +175,8 @@ router.post(
             for (const collateral of guarantor.collaterals) {
               await connection.query(
                 `INSERT INTO guarantor_collaterals 
-              (guarantor_id, item_name, item_count, additional_details)
-              VALUES (?, ?, ?, ?)`,
+        (guarantor_id, item_name, item_count, additional_details)
+        VALUES (?, ?, ?, ?)`,
                 [
                   guarantorId,
                   collateral.item_name,
@@ -238,7 +189,7 @@ router.post(
         }
       }
 
-      await connection.commit();
+      //await connection.commit();
       res
         .status(201)
         .json({ message: "Customer created successfully", customerId });
@@ -249,6 +200,64 @@ router.post(
     }
   }
 );
+
+// Get all customers with pagination and filtering by creator
+router.get("/", async (req, res) => {
+  try {
+    const { page = 1, limit = 10, created_by } = req.query;
+    const offset = (page - 1) * limit;
+
+    let baseQuery = `
+      SELECT 
+        id, first_name, middle_name, last_name, phone, national_id, 
+        date_of_birth, gender, address, county, occupation, 
+        business_name, business_location, residence_details, 
+        monthly_income, credit_score, created_by, national_id_photo, passport_photo
+      FROM customers
+    `;
+
+    const whereClauses = [];
+    const queryParams = [];
+
+    // Filter by created_by if provided
+    if (created_by) {
+      whereClauses.push("created_by = ?");
+      queryParams.push(created_by);
+    }
+
+    if (whereClauses.length > 0) {
+      baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
+    }
+
+    // Get total count for pagination
+    const [countResult] = await connection.query(
+      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
+      queryParams
+    );
+    const total = countResult[0].total;
+
+    // Add pagination
+    const finalQuery = `${baseQuery} ORDER BY id DESC LIMIT ? OFFSET ?`;
+    const [customers] = await connection.query(finalQuery, [
+      ...queryParams,
+      parseInt(limit),
+      parseInt(offset),
+    ]);
+
+    res.status(200).json({
+      data: customers,
+      meta: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    res.status(500).json({ error: "Failed to fetch customers" });
+  }
+});
 
 // Get a customer by ID with all related data
 router.get("/:id", async (req, res) => {

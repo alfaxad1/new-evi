@@ -196,23 +196,16 @@ router.get("/loan-details/paid", async (req, res) => {
         c.national_id,
         c.phone,
         lp.name AS loan_product,
-        la.purpose,
         l.disbursement_date,
         l.due_date,
         l.principal,
         l.total_interest,
         l.total_amount,
         l.status,
-        (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount,
-        IFNULL(
-          l.remaining_balance, 
-          (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0))
-        ) as remaining_balance,
-        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+        (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
-      JOIN loan_applications la ON l.application_id = la.id
-      JOIN loan_products lp ON la.product_id = lp.id
+      JOIN loan_products lp ON l.product_id = lp.id
     `;
 
     const whereClauses = [];

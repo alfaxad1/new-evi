@@ -42,6 +42,7 @@ export default function SignInForm() {
         localStorage.setItem("userId", JSON.stringify(response.data.id));
 
         localStorage.setItem("token", response.data.token);
+        window.location.reload();
       } else {
         console.error("Error: No token received in response");
       }
