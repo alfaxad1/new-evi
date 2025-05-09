@@ -10,6 +10,7 @@ import {
 import withAuth from "../../utils/withAuth";
 import { BarLoader } from "react-spinners";
 import { ArrowBigDown, DollarSign, Percent, Wallet2 } from "lucide-react";
+import Button from "../../components/ui/button/Button";
 
 interface Loan {
   id: number;
@@ -41,37 +42,57 @@ const MonthlyActiveLoans = () => {
   const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-based
   const currentYear = new Date().getFullYear();
 
-  const fetchMonthlyActiveLoans = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/loans/monthly-active-loans",
-        {
-          params: {
-            officerId,
-            month: currentMonth,
-            year: currentYear,
-          },
+  const fetchMonthlyActiveLoans = useCallback(
+    async (page: number) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/loans/monthly-active-loans",
+          {
+            params: {
+              officerId,
+              month: currentMonth,
+              year: currentYear,
+              page,
+            },
+          }
+        );
+
+        setLoans(response.data.loans);
+        setTotalPages(response.data.pagination.totalPages);
+        setSummary(response.data.summary);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          setError(error.response?.data?.error || "Failed to fetch loans.");
+        } else {
+          setError("An unexpected error occurred.");
         }
-      );
-
-      setLoans(response.data.loans);
-      setSummary(response.data.summary);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || "Failed to fetch loans.");
-      } else {
-        setError("An unexpected error occurred.");
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
+    },
+    [officerId, currentMonth, currentYear]
+  );
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
     }
-  }, [officerId, currentMonth, currentYear]);
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
 
   useEffect(() => {
-    fetchMonthlyActiveLoans();
+    fetchMonthlyActiveLoans(page);
   }, [fetchMonthlyActiveLoans]);
 
   if (loading) {
@@ -243,6 +264,30 @@ const MonthlyActiveLoans = () => {
                 ))}
               </TableBody>
             </Table>
+          </div>
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center mt-4">
+            <Button
+              size="sm"
+              className="hover:bg-gray-200 m-4"
+              variant="outline"
+              onClick={handlePrevPage}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              size="sm"
+              className="hover:bg-gray-200 m-4"
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
           </div>
         </div>
       </div>

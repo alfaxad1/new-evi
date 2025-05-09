@@ -106,11 +106,9 @@ const Loans = () => {
   const repaymentData = {
     loanId,
     amount,
-    //dueDate,
     paidDate,
     status,
     mpesaCode,
-    //createdBy,
   };
 
   const handleSaveClick = async (e: React.FormEvent) => {

@@ -307,7 +307,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
 // Get monthly active loans for a specific officer with deficit and percentage
 router.get("/monthly-active-loans", async (req, res) => {
   try {
-    const { officerId, month, year } = req.query;
+    const { officerId, month, year, page = 1, limit = 3 } = req.query;
 
     if (!officerId || !month || !year) {
       return res.status(400).json({
@@ -315,7 +315,7 @@ router.get("/monthly-active-loans", async (req, res) => {
       });
     }
 
-    const targetAmount = 700000; // Target total amount
+    const targetAmount = 700000;
 
     // Query to get loans for the specified officer, month, and year
     const [loans] = await connection.query(
@@ -339,8 +339,10 @@ router.get("/monthly-active-loans", async (req, res) => {
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       ORDER BY l.disbursement_date DESC
+      LIMIT ?
+      OFFSET ?
       `,
-      [officerId, month, year]
+      [officerId, month, year, limit, (page - 1) * limit]
     );
 
     // Query to calculate the sum of total_amount and count of loans
@@ -365,6 +367,11 @@ router.get("/monthly-active-loans", async (req, res) => {
     const deficit = targetAmount - totalAmountSum;
     const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2); // Rounded to 2 decimal places
 
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(loanCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPreviousPage = page > 1;
+
     res.status(200).json({
       loans,
       summary: {
@@ -373,6 +380,13 @@ router.get("/monthly-active-loans", async (req, res) => {
         deficit: deficit,
         percentage: `${percentage}%`,
         target_amount: targetAmount,
+      },
+      pagination: {
+        page,
+        limit,
+        totalPages,
+        hasNextPage,
+        hasPreviousPage,
       },
     });
   } catch (err) {
