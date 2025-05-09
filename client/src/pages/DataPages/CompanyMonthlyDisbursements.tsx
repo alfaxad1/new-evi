@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import withAuth from "../../utils/withAuth";
 import axios from "axios";
 import {
@@ -31,7 +31,7 @@ const CompanyMonthlyDisbursements = () => {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  const fetchMonthlyCollections = async () => {
+  const fetchMonthlyCollections = useCallback(async () => {
     try {
       const response = await axios.get(
         `http://localhost:8000/api/loans/monthly-active-loans-admin`,
@@ -49,10 +49,10 @@ const CompanyMonthlyDisbursements = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [officerId, currentMonth, currentYear]);
   useEffect(() => {
     fetchMonthlyCollections();
-  }, []);
+  }, [fetchMonthlyCollections]);
   return (
     <>
       {summary && (
@@ -82,7 +82,7 @@ const CompanyMonthlyDisbursements = () => {
                   Total Disbursements
                 </span>
                 <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                  Ksh. {summary.total_amount_sum.toLocaleString()}
+                  Ksh. {Math.round(summary.total_amount_sum).toLocaleString()}
                 </h4>
               </div>
             </div>

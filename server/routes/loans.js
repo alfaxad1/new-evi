@@ -106,7 +106,7 @@ const validateLoanData = [
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
   try {
-    const { officerId, role, page = 1, limit = 10 } = req.query; // Get officerId, role, page, and limit from query parameters
+    const { officerId, role, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
     let baseQuery = `
@@ -126,6 +126,7 @@ router.get("/loan-details", async (req, res) => {
         l.arrears,
         l.installments_sum,
         l.status,
+        l.processing_fee,
         (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount,
         IFNULL(
           l.remaining_balance, 

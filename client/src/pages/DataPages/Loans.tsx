@@ -188,6 +188,12 @@ const Loans = () => {
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
+                    Processing Fee
+                  </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
                     Loan Amount
                   </TableCell>
                   <TableCell
@@ -253,6 +259,9 @@ const Loans = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.total_interest}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.processing_fee}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.total_amount}

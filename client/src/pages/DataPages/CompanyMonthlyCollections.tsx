@@ -1,4 +1,4 @@
-import { Clock1 } from "lucide-react";
+import { DollarSign, Wallet } from "lucide-react";
 import withAuth from "../../utils/withAuth";
 import {
   Table,
@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface Officer {
   id: number;
@@ -31,7 +31,7 @@ const CompanyMonthlyCollections = () => {
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  const fetchMonthlyCollections = async () => {
+  const fetchMonthlyCollections = useCallback(async () => {
     try {
       const response = await axios.get(
         `http://localhost:8000/api/repayments/monthly-approved-admin`,
@@ -49,17 +49,19 @@ const CompanyMonthlyCollections = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [officerId, currentMonth, currentYear]);
+
   useEffect(() => {
     fetchMonthlyCollections();
-  }, []);
+  }, [fetchMonthlyCollections]);
+
   return (
     <>
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6 mb-5">
           <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
             <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              <Clock1 className="text-gray-800 size-6 dark:text-white/90" />
+              <Wallet className="text-gray-800 size-6 dark:text-white/90" />
             </div>
             <div className="flex items-end justify-between mt-5">
               <div>
@@ -74,7 +76,7 @@ const CompanyMonthlyCollections = () => {
           </div>
           <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
             <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              <Clock1 className="text-gray-800 size-6 dark:text-white/90" />
+              <DollarSign className="text-gray-800 size-6 dark:text-white/90" />
             </div>
             <div className="flex items-end justify-between mt-5">
               <div>

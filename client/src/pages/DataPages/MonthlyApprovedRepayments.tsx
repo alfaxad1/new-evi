@@ -9,6 +9,7 @@ import {
 } from "../../components/ui/table";
 import withAuth from "../../utils/withAuth";
 import { BarLoader } from "react-spinners";
+import { ArrowBigDown, DollarSignIcon, Percent, Wallet } from "lucide-react";
 
 interface Repayment {
   id: number;
@@ -87,28 +88,66 @@ const MonthlyApprovedRepayments = () => {
       </h1>
 
       {summary && (
-        <div className="mb-6">
-          <div className="flex items-center mb-2 text-green-600">
-            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
-            <span>Total Collections: {summary.repayment_count}</span>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6 mb-5">
+          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+              <Wallet className="text-gray-800 size-6 dark:text-white/90" />
+            </div>
+            <div className="flex items-end justify-between mt-5">
+              <div>
+                <span className="text-lg text-gray-500 dark:text-gray-400">
+                  Total Collections
+                </span>
+                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                  {summary.repayment_count}
+                </h4>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center mb-2 text-blue-600">
-            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
-            <span>
-              Total Amount: {summary.total_amount_sum.toLocaleString()}
-            </span>
+          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+              <DollarSignIcon className="text-gray-800 size-6 dark:text-white/90" />
+            </div>
+            <div className="flex items-end justify-between mt-5">
+              <div>
+                <span className="text-lg text-gray-500 dark:text-gray-400">
+                  Total Amount
+                </span>
+                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                  Ksh. {Math.round(summary.total_amount_sum).toLocaleString()}
+                </h4>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center mb-2 text-pink-600">
-            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
-            <span>Deficit: {summary.deficit.toLocaleString()}</span>
+          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+              <ArrowBigDown className="text-gray-800 size-6 dark:text-white/90" />
+            </div>
+            <div className="flex items-end justify-between mt-5">
+              <div>
+                <span className="text-lg text-gray-500 dark:text-gray-400">
+                  Deficit
+                </span>
+                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                  Ksh. {summary.deficit.toLocaleString()}
+                </h4>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center mb-2 text-green-600">
-            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
-            <span>Percentage: {summary.percentage}</span>
-          </div>
-          <div className="flex items-center mb-2 text-blue-600">
-            <svg className="w-4 h-4 mr-2" data-lucide="dollar-sign"></svg>
-            <span>Target Amount: {summary.target_amount.toLocaleString()}</span>
+          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+              <Percent className="text-gray-800 size-6 dark:text-white/90" />
+            </div>
+            <div className="flex items-end justify-between mt-5">
+              <div>
+                <span className="text-lg text-gray-500 dark:text-gray-400">
+                  Percentage
+                </span>
+                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                  {summary.percentage}
+                </h4>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -161,10 +200,10 @@ const MonthlyApprovedRepayments = () => {
                       {repayment.loan_product}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.amount.toLocaleString()}
+                      Ksh. {Math.round(repayment.amount).toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.loan_total.toLocaleString()}
+                      Ksh. {Math.round(repayment.loan_total).toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {repayment.paid_date.split("T")[0]}

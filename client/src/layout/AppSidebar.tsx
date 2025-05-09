@@ -107,18 +107,20 @@ const othersItems: NavItem[] = [
     ],
   },
 
-  {
-    icon: <BarChart />,
-    name: "Reports",
-    subItems: [
-      { name: "Disbursements", path: "/monthly-active-loans", pro: false },
-      {
-        name: "Collections",
-        path: "/monthly-approved-repayments",
-        pro: false,
-      },
-    ],
-  },
+  role !== "admin"
+    ? {
+        icon: <BarChart />,
+        name: "Reports",
+        subItems: [
+          { name: "Disbursements", path: "/monthly-active-loans", pro: false },
+          {
+            name: "Collections",
+            path: "/monthly-approved-repayments",
+            pro: false,
+          },
+        ],
+      }
+    : undefined,
 
   role !== "officer"
     ? {
