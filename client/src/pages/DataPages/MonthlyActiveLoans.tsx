@@ -93,7 +93,7 @@ const MonthlyActiveLoans = () => {
 
   useEffect(() => {
     fetchMonthlyActiveLoans(page);
-  }, [fetchMonthlyActiveLoans]);
+  }, [page, fetchMonthlyActiveLoans]);
 
   if (loading) {
     return <BarLoader color="#36D7B7" width={150} height={4} />;
@@ -105,10 +105,6 @@ const MonthlyActiveLoans = () => {
 
   return (
     <div>
-      <h1 className="text-gray-900 text-xl px-4 py-2 inline-block mb-3">
-        Monthly Disbursement
-      </h1>
-
       {summary && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6 mb-5">
           <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">

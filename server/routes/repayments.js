@@ -224,7 +224,7 @@ router.get("/approved", async (req, res) => {
 // Get monthly approved repayments for a specific officer with summary
 router.get("/monthly-approved", async (req, res) => {
   try {
-    const { officerId, month, year } = req.query;
+    const { officerId, month, year, page = 1, limit = 10 } = req.query;
 
     if (!officerId || !month || !year) {
       return res.status(400).json({
@@ -247,6 +247,7 @@ router.get("/monthly-approved", async (req, res) => {
     const targetAmount = 700000; // Target total amount
 
     // Query to get approved repayments for the specified officer, month, and year
+    const offset = (page - 1) * limit;
     const [repayments] = await connection.query(
       `
       SELECT 
@@ -267,8 +268,10 @@ router.get("/monthly-approved", async (req, res) => {
         AND MONTH(r.paid_date) = ?
         AND YEAR(r.paid_date) = ?
       ORDER BY r.paid_date DESC
+      LIMIT ?
+      OFFSET ?
       `,
-      [officerId, month, year]
+      [officerId, month, year, limit, offset]
     );
 
     // Query to calculate the sum of approved repayments and count
@@ -294,6 +297,9 @@ router.get("/monthly-approved", async (req, res) => {
     const deficit = targetAmount - totalAmountSum;
     const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2);
 
+    // Calculate total pages
+    const totalPages = Math.ceil(repaymentCount / limit);
+
     res.status(200).json({
       repayments,
       summary: {
@@ -302,6 +308,11 @@ router.get("/monthly-approved", async (req, res) => {
         deficit: deficit,
         percentage: `${percentage}%`,
         target_amount: targetAmount,
+      },
+      meta: {
+        page,
+        limit,
+        totalPages,
       },
     });
   } catch (err) {

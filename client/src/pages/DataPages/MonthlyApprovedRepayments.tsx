@@ -10,6 +10,7 @@ import {
 import withAuth from "../../utils/withAuth";
 import { BarLoader } from "react-spinners";
 import { ArrowBigDown, DollarSignIcon, Percent, Wallet } from "lucide-react";
+import Button from "../../components/ui/button/Button";
 
 interface Repayment {
   id: number;
@@ -37,41 +38,63 @@ const MonthlyApprovedRepayments = () => {
   const [error, setError] = useState<string | null>(null);
 
   const officerId = localStorage.getItem("userId") || "";
-  const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-based
+  const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  const fetchMonthlyApprovedRepayments = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
-    try {
-      const response = await axios.get(
-        "http://localhost:8000/api/repayments/monthly-approved",
-        {
-          params: {
-            officerId,
-            month: currentMonth,
-            year: currentYear,
-          },
+  const fetchMonthlyApprovedRepayments = useCallback(
+    async (page: number) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(
+          "http://localhost:8000/api/repayments/monthly-approved",
+          {
+            params: {
+              officerId,
+              month: currentMonth,
+              year: currentYear,
+              page,
+            },
+          }
+        );
+
+        setRepayments(response.data.repayments);
+        setSummary(response.data.summary);
+        setTotalPages(response.data.meta.totalPages);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          setError(
+            error.response?.data?.error || "Failed to fetch repayments."
+          );
+        } else {
+          setError("An unexpected error occurred.");
         }
-      );
-
-      setRepayments(response.data.repayments);
-      setSummary(response.data.summary);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setError(error.response?.data?.error || "Failed to fetch repayments.");
-      } else {
-        setError("An unexpected error occurred.");
+      } finally {
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
+    },
+    [officerId, currentMonth, currentYear]
+  );
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(page + 1);
     }
-  }, [officerId, currentMonth, currentYear]); // Add dependencies here
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
 
   useEffect(() => {
-    fetchMonthlyApprovedRepayments();
-  }, [fetchMonthlyApprovedRepayments]); // Add the function as a dependency
+    fetchMonthlyApprovedRepayments(page);
+  }, [page, fetchMonthlyApprovedRepayments]);
 
   if (loading) {
     return <BarLoader color="#36D7B7" width={150} height={4} />;
@@ -212,6 +235,30 @@ const MonthlyApprovedRepayments = () => {
                 ))}
               </TableBody>
             </Table>
+          </div>
+          {/* Pagination Controls */}
+          <div className="flex justify-between items-center mt-4">
+            <Button
+              size="sm"
+              className="hover:bg-gray-200 m-4"
+              variant="outline"
+              onClick={handlePrevPage}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <Button
+              size="sm"
+              className="hover:bg-gray-200 m-4"
+              variant="outline"
+              onClick={handleNextPage}
+              disabled={page === totalPages}
+            >
+              Next
+            </Button>
           </div>
         </div>
       </div>

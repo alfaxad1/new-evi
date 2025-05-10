@@ -307,7 +307,7 @@ router.get("/loan-details/pending-disbursement", async (req, res) => {
 // Get monthly active loans for a specific officer with deficit and percentage
 router.get("/monthly-active-loans", async (req, res) => {
   try {
-    const { officerId, month, year, page = 1, limit = 3 } = req.query;
+    const { officerId, month, year, page = 1, limit = 5 } = req.query;
 
     if (!officerId || !month || !year) {
       return res.status(400).json({
