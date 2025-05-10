@@ -957,7 +957,7 @@ router.get("/loan-details/disbursed-amount", async (req, res) => {
         SUM(l.total_amount) as total_disbursed_amount
       FROM loans l
       WHERE l.officer_id = ?
-        AND l.status = 'active' OR l.status = 'partially_paid'
+        AND (l.status = 'active' OR l.status = 'partially_paid')
         AND DATE(l.created_at) = CURDATE()
     `;
 
