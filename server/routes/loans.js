@@ -426,7 +426,7 @@ router.get("/monthly-active-loans-admin", async (req, res) => {
         u.first_name,
         u.last_name,
         COUNT(l.id) as loan_count,
-        SUM(l.total_amount) as total_amount_sum
+        COALESCE(SUM(l.total_amount), 0) as total_amount_sum
       FROM users u
       LEFT JOIN loans l ON u.id = l.officer_id
       WHERE u.role = 'officer'
@@ -438,39 +438,21 @@ router.get("/monthly-active-loans-admin", async (req, res) => {
       [month, year]
     );
 
-    // Calculate summary for all officers
-    const [allOfficersSummary] = await connection.query(
-      `
-      SELECT 
-        COUNT(*) as loan_count,
-        SUM(l.total_amount) as total_amount_sum
-      FROM loans l
-      WHERE l.status = 'active' OR l.status = 'partially_paid'
-        AND MONTH(l.disbursement_date) = ?
-        AND YEAR(l.disbursement_date) = ?
-      `,
-      [month, year]
+    // Calculate summary
+    const summary = officers.reduce(
+      (acc, officer) => {
+        acc.loan_count += officer.loan_count;
+        acc.total_amount_sum += parseFloat(officer.total_amount_sum);
+        return acc;
+      },
+      { loan_count: 0, total_amount_sum: 0 }
     );
-
-    const allOfficersTotalAmountSum =
-      allOfficersSummary[0].total_amount_sum || 0;
-    const allOfficersLoanCount = allOfficersSummary[0].loan_count || 0;
-
-    // Calculate target amount and percentage
-    const targetAmount = 700000;
-    const totalAmountSum = officers.reduce(
-      (acc, officer) => acc + (officer.total_amount_sum || 0),
-      0
-    );
-    const percentage = ((totalAmountSum / targetAmount) * 100).toFixed(2);
 
     res.status(200).json({
       officers,
       summary: {
-        loan_count: allOfficersLoanCount,
-        total_amount_sum: allOfficersTotalAmountSum,
-        target_amount: targetAmount,
-        percentage: `${percentage}%`,
+        loan_count: summary.loan_count,
+        total_amount_sum: summary.total_amount_sum,
       },
     });
   } catch (err) {
