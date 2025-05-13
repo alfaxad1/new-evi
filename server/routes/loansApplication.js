@@ -412,6 +412,12 @@ router.post("/", validateLoanApplication, async (req, res) => {
       return res.status(404).json({ error: "Customer not found" });
     }
 
+    const [phoneNumber] = await connection.query(
+      "SELECT phone FROM customers WHERE id = ?",
+      [customerId]
+    );
+    console.log("Customer phone number:", phoneNumber[0].phone);
+
     // Verify loan officer exists
     const [officer] = await connection.query(
       "SELECT id FROM users WHERE id = ? AND role = 'officer'",
@@ -438,12 +444,13 @@ router.post("/", validateLoanApplication, async (req, res) => {
     // Insert loan application
     const [result] = await connection.query(
       `INSERT INTO loans 
-      (customer_id, product_id, officer_id, applied_amount, purpose, approval_status,  installment_type, expected_completion_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      (customer_id, product_id, officer_id, phone_number, applied_amount, purpose, approval_status,  installment_type, expected_completion_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customerId,
         productId,
         officerId,
+        phoneNumber[0].phone,
         amount,
         purpose,
         status,

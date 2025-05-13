@@ -1,4 +1,11 @@
-app.post("http://localhost:8000/api/payment/bank-callback", (req, res) => {
+const express = require("express");
+const connection = require("../config/dbConnection");
+const { updateLoanStatus } = require("./loanService");
+
+const router = express.Router();
+router.use(express.json());
+
+router.post("/bank-callback", async (req, res) => {
   try {
     const {
       AcctNo,
@@ -19,6 +26,8 @@ app.post("http://localhost:8000/api/payment/bank-callback", (req, res) => {
       TransactionId,
     } = req.body;
 
+    console.log("Received payment data:", req.body);
+
     if (!Narration) {
       res
         .status(500)
@@ -30,33 +39,12 @@ app.post("http://localhost:8000/api/payment/bank-callback", (req, res) => {
 
     req.body.phoneNumber = phoneNumber;
 
-    // Logging all data for test purpose
-    console.log("======= Bank Callback Data Received =======");
-    console.log("Account Number:", AcctNo);
-    console.log("Amount:", Amount);
-    console.log("Booked Balance:", BookedBalance);
-    console.log("Cleared Balance:", ClearedBalance);
-    console.log("Currency:", Currency);
-    console.log("Customer Memo Line 1:", CustMemoLine1);
-    console.log("Customer Memo Line 2:", CustMemoLine2);
-    console.log("Customer Memo Line 3:", CustMemoLine3);
-    console.log("Event Type:", EventType);
-    console.log("Exchange Rate:", ExchangeRate);
-    console.log("Narration:", Narration);
-    console.log("Extracted Phone Number:", phoneNumber);
-    console.log("Payment Reference:", PaymentRef);
-    console.log("Posting Date:", PostingDate);
-    console.log("Value Date:", ValueDate);
-    console.log("Transaction Date:", TransactionDate);
-    console.log("Transaction ID:", TransactionId);
-    console.log("===========================================");
+    await processPayment(req.body);
 
     return res.status(200).json({
       MessageCode: "200",
       Message: "Successfully received data",
     });
-
-    processPayment(req.body);
   } catch (error) {
     console.error("Error handling callback:", error.message);
 
@@ -71,23 +59,26 @@ app.post("http://localhost:8000/api/payment/bank-callback", (req, res) => {
 const processPayment = async (paymentData) => {
   console.log("Processing payment data:", paymentData);
 
-  const [loans] = connection.query(
-    `SELECT * FROM loans WHERE status = 'active' OR status = 'partially_paid'`
+  const [loans] = await connection.query(
+    `SELECT * FROM loans WHERE status = 'active' OR status = 'partially_paid' AND phone_number = ?`,
+    [paymentData.phoneNumber]
   );
 
   console.log("Loans:", loans[0]);
 
-  if (paymentData.phoneNumber === loans[0].phone_number) {
+  const loanId = loans[0].id;
+
+  if (loans[0]) {
     console.log("Payment processed successfully");
 
-    let newArrears = arrears || 0;
-    let nextDueDate = new Date(due_date);
+    let newArrears = loans[0].arrears || 0;
+    let nextDueDate = new Date(loans[0].due_date);
 
     // Check if payment is sufficient
-    if (amount < loans[0].installment_amount) {
-      newArrears += loans[0].installment_amount - amount; // Add shortfall to arrears
-    } else if (amount > loans[0].installment_amount) {
-      newArrears -= amount - loans[0].installment_amount; // Reduce arrears if overpaid
+    if (paymentData.Amount < loans[0].installment_amount) {
+      newArrears += loans[0].installment_amount - paymentData.Amount; // Add shortfall to arrears
+    } else if (paymentData.Amount > loans[0].installment_amount) {
+      newArrears -= paymentData.Amount - loans[0].installment_amount; // Reduce arrears if overpaid
     }
 
     // Update due date
@@ -111,7 +102,7 @@ const processPayment = async (paymentData) => {
       VALUES (?, ?, ?, NOW(), 'paid', ?, ?, NOW())`,
       [
         loanId,
-        amount,
+        paymentData.Amount,
         nextDueDate,
         paymentData.TransactionId,
         loans[0].officer_id,
@@ -136,9 +127,9 @@ const processPayment = async (paymentData) => {
 
     // Update loan status and balance
     await updateLoanStatus(loanId, connection);
-
-    res.status(200).json({ message: "Repayment recorded successfully" });
   } else {
     console.log("Payment not processed");
   }
 };
+
+module.exports = router;

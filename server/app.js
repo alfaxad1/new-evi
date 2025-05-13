@@ -30,6 +30,7 @@ const loans = require("./routes/loans");
 const repayments = require("./routes/repayments");
 const transactions = require("./routes/mpesaTransactions");
 const customerRoutes = require("./routes/customerRoutes");
+const repaymentService = require("./services/repaymentService");
 
 app.use("/api/users", users);
 app.use("/api/customers", customers);
@@ -39,6 +40,7 @@ app.use("/api/loans", loans);
 app.use("/api/repayments", repayments);
 app.use("/api/transactions", transactions);
 app.use("/api/customerNew", customerRoutes);
+app.use("/api/payment", repaymentService);
 
 app.get("/", (req, res) => {
   res.send(
