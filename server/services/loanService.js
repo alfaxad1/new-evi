@@ -50,8 +50,7 @@ const updateLoanStatus = async (loanId, connection) => {
       loanId,
     ]);
 
-    console.log("loan id",loanId);
-    
+    console.log("loan ID", loanId);
 
     if (loan.length === 0) {
       throw new Error("Loan not found");
@@ -81,7 +80,7 @@ const updateLoanStatus = async (loanId, connection) => {
 
     if (installmentsSum >= total_amount) {
       newStatus = "paid";
-      newArrears = 0;  
+      newArrears = 0;
       console.log("Setting to paid");
     } else if (installmentsSum > 0 && installmentsSum < total_amount) {
       newStatus = "partially_paid";
