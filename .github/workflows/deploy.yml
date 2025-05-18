@@ -63,6 +63,14 @@ jobs:
           source: "client/dist/* server/*"
           target: "/tmp/deploy"
 
+        #check if server and client/dist have content
+      - name: Check if files exist
+        run: |
+          if [ ! -d "/tmp/deploy/client/dist" ] || [ ! -d "/tmp/deploy/server" ]; then
+            echo "No files found in /tmp/deploy/client/dist or /tmp/deploy/server"
+            exit 1
+          fi
+
       # Move files to correct locations and restart backend
       - name: Move files and restart backend
         uses: appleboy/ssh-action@v1.0.3
