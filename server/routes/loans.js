@@ -335,7 +335,7 @@ router.get("/monthly-active-loans", async (req, res) => {
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
       WHERE l.officer_id = ? 
-        AND l.status = 'active' OR l.status = 'partially_paid' OR l.status = 'paid'
+        AND l.status IN ('active', 'partially_paid')
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       ORDER BY l.disbursement_date DESC
@@ -353,7 +353,7 @@ router.get("/monthly-active-loans", async (req, res) => {
         SUM(l.total_amount) as total_amount_sum
       FROM loans l
       WHERE l.officer_id = ? 
-        AND l.status = 'active' OR l.status = 'partially_paid' OR l.status = 'paid'
+        AND l.status IN ('active', 'partially_paid')
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       `,
@@ -725,7 +725,7 @@ router.get("/loan-details/due-today", async (req, res) => {
     const { officerId, role, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
-    let baseQuery = `
+    let sql = `
       SELECT 
         l.id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
@@ -736,48 +736,30 @@ router.get("/loan-details/due-today", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
-        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+        DATEDIFF(l.due_date, ?) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE l.due_date = CURDATE() AND l.status IN ('active', 'partially_paid')
+      WHERE l.due_date = ? AND l.status IN ('active', 'partially_paid')
     `;
 
-    const whereClauses = [];
-    const queryParams = [];
+    const params = [new Date(), new Date()];
 
-    // Role-based filtering
     if (role === "officer") {
-      whereClauses.push("l.officer_id = ?");
-      queryParams.push(officerId);
+      sql += ` AND l.officer_id = ?`;
+      params.push(officerId);
     }
 
-    if (whereClauses.length > 0) {
-      baseQuery += ` AND ${whereClauses.join(" AND ")}`;
-    }
+    sql += ` ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit), offset);
 
-    // Get total count
-    const [countResult] = await connection.query(
-      `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-      queryParams
-    );
-    const total = countResult[0].total;
-
-    // Add pagination
-    const finalQuery = `${baseQuery} ORDER BY l.due_date ASC LIMIT ? OFFSET ?`;
-    const [loans] = await connection.query(finalQuery, [
-      ...queryParams,
-      parseInt(limit),
-      offset,
-    ]);
+    const [loans] = await connection.query(sql, params);
 
     res.status(200).json({
       data: loans,
       meta: {
         page: parseInt(page),
         limit: parseInt(limit),
-        total,
-        totalPages: Math.ceil(total / limit),
       },
     });
   } catch (err) {
@@ -807,7 +789,7 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND l.status IN ('active', 'partially_paid')
+      WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND l.status = 'active' OR l.status = 'partially_paid'
     `;
 
     const whereClauses = [];

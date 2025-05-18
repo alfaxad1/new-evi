@@ -69,6 +69,22 @@ router.post(
       // Start transaction
       //await connection.beginTransaction();
 
+      function standardizePhone(phone) {
+       
+        phone = phone.replace(/[^0-9+]/g, "");
+
+        
+        if (/^0[0-9]{8,9}$/.test(phone)) {
+          return "254" + phone.slice(1);
+        } else if (/^\+254[0-9]{8,9}$/.test(phone)) {
+          return phone.slice(1);
+        } else if (/^254[0-9]{8,9}$/.test(phone)) {
+          return phone;
+        } else {
+          return null;
+        }
+      }
+
       // Insert customer
       const [customerResult] = await connection.query(
         `INSERT INTO customers (
@@ -81,7 +97,7 @@ router.post(
           first_name,
           middle_name,
           last_name,
-          phone,
+          standardizePhone(phone),
           national_id,
           date_of_birth,
           gender,

@@ -50,6 +50,9 @@ const updateLoanStatus = async (loanId, connection) => {
       loanId,
     ]);
 
+    console.log("loan id",loanId);
+    
+
     if (loan.length === 0) {
       throw new Error("Loan not found");
     }

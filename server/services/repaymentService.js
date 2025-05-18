@@ -37,7 +37,10 @@ router.post("/bank-callback", async (req, res) => {
     const phoneMatch = Narration.match(/2547\d{8}/);
     const phoneNumber = phoneMatch ? phoneMatch[0] : "Not found";
 
+    const mpesaCode = Narration.split("~")[0] || " ";
+
     req.body.phoneNumber = phoneNumber;
+    req.body.mpesaCode = mpesaCode;
 
     await processPayment(req.body);
 
@@ -47,10 +50,9 @@ router.post("/bank-callback", async (req, res) => {
     });
   } catch (error) {
     console.error("Error handling callback:", error.message);
-
     return res.status(400).json({
       MessageCode: "400",
-      Message: "Failed to process callback",
+      Message: "Failed to process payment",
       Error: error.message,
     });
   }
@@ -63,8 +65,6 @@ const processPayment = async (paymentData) => {
     `SELECT * FROM loans WHERE status = 'active' OR status = 'partially_paid' AND phone_number = ?`,
     [paymentData.phoneNumber]
   );
-
-  console.log("Loans:", loans[0]);
 
   const loanId = loans[0].id;
 
@@ -104,7 +104,7 @@ const processPayment = async (paymentData) => {
         loanId,
         paymentData.Amount,
         nextDueDate,
-        paymentData.TransactionId,
+        paymentData.mpesaCode,
         loans[0].officer_id,
       ]
     );
@@ -118,9 +118,9 @@ const processPayment = async (paymentData) => {
         `;
       await connection.query(transactionSql, [
         loans[0].customer_id,
-        loans[0].loan_id,
+        loanId,
         paymentData.Amount,
-        paymentData.TransactionId,
+        paymentData.mpesaCode,
         loans[0].officer_id,
       ]);
     }
