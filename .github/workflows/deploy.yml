@@ -53,6 +53,7 @@ jobs:
         working-directory: ./server
         run: npm install
 
+      # Debug workspace contents
       - name: Debug workspace contents
         run: |
           echo "Listing workspace:"
@@ -62,15 +63,26 @@ jobs:
           echo "Listing server:"
           ls -la server || echo "server missing"
 
-      # Deploy to shared hosting using FTP (scp)
+      # Debug tar command
+      - name: Debug tar command
+        run: |
+          echo "Creating test tar archive"
+          tar -zcvf /tmp/test.tar.gz client/dist server --exclude=server/node_modules --exclude=server/.env --exclude=server/uploads || echo "tar failed"
+          echo "Listing tar contents"
+          tar -ztvf /tmp/test.tar.gz
+
+      # Deploy to shared hosting using SCP
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          source: "client/dist/* server/*"
+          source: "client/dist,server"
           target: "/tmp/deploy"
+          debug: true
+          rm: true
+          overwrite: true
 
       # Move files to correct locations and restart backend
       - name: Move files and restart backend
@@ -80,14 +92,22 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           script: |
+            echo "Listing /tmp/deploy"
+            ls -la /tmp/deploy
+            echo "Listing /tmp/deploy/client/dist"
+            ls -la /tmp/deploy/client/dist || echo "client/dist missing"
+            echo "Listing /tmp/deploy/server"
+            ls -la /tmp/deploy/server || echo "server missing"
             # Move frontend build to public folder
-            rm -rf $${{ secrets.FRONTEND_PATH }}/*
-            mv /tmp/deploy/client/dist/* $${{ secrets.FRONTEND_PATH }}/
-
+            rm -rf ${{ secrets.FRONTEND_PATH }}/*
+            mv /tmp/deploy/client/dist/* ${{ secrets.FRONTEND_PATH }}/
             # Move backend files
-            rm -rf $${{ secrets.BACKEND_PATH }}/*
-            mv /tmp/deploy/server/* $${{ secrets.BACKEND_PATH }}/
-
-
+            rm -rf ${{ secrets.BACKEND_PATH }}/*
+            mv /tmp/deploy/server/* ${{ secrets.BACKEND_PATH }}/
+            # Install backend dependencies
+            cd ${{ secrets.BACKEND_PATH }}
+            npm install
+            # Restart backend (adjust command as needed)
+            pm2 restart server || echo "Failed to restart backend"
             # Clean up temporary files
             rm -rf /tmp/deploy
