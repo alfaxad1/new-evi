@@ -53,13 +53,6 @@ jobs:
         working-directory: ./server
         run: npm install
 
-      - name: Check if files exist
-        run: |
-          if [ ! -d "./client/dist" ] || [ ! -d "./server" ]; then
-            echo "No files found in ./client/dist or ./server"
-            exit 1
-          fi
-
       # Deploy to shared hosting using FTP (scp)
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
@@ -67,7 +60,7 @@ jobs:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          source: "client/dist/* server/*"
+          source: "client/build/* server/*"
           target: "/tmp/deploy"
 
       # Move files to correct locations and restart backend
@@ -80,7 +73,7 @@ jobs:
           script: |
             # Move frontend build to public folder
             rm -rf $${{ secrets.FRONTEND_PATH }}/*
-            mv /tmp/deploy/client/dist/* $${{ secrets.FRONTEND_PATH }}/
+            mv /tmp/deploy/client/build/* $${{ secrets.FRONTEND_PATH }}/
 
             # Move backend files
             rm -rf $${{ secrets.BACKEND_PATH }}/*
