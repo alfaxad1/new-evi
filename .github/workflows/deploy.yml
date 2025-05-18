@@ -53,16 +53,6 @@ jobs:
         working-directory: ./server
         run: npm install
 
-      # Debug workspace contents
-      - name: Debug workspace contents
-        run: |
-          echo "Listing workspace:"
-          ls -la
-          echo "Listing client/dist:"
-          ls -la client/dist || echo "client/dist missing"
-          echo "Listing server:"
-          ls -la server || echo "server missing"
-
       # Deploy frontend via FTP
       - name: Deploy frontend to server via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
