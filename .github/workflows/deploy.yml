@@ -53,6 +53,15 @@ jobs:
         working-directory: ./server
         run: npm install
 
+      - name: Debug workspace contents
+        run: |
+          echo "Listing workspace:"
+          ls -la
+          echo "Listing client/dist:"
+          ls -la client/dist || echo "client/dist missing"
+          echo "Listing server:"
+          ls -la server || echo "server missing"
+
       # Deploy to shared hosting using FTP (scp)
       - name: Deploy to server
         uses: appleboy/scp-action@v0.1.7
@@ -60,7 +69,7 @@ jobs:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          source: "client/build/* server/*"
+          source: "client/dist/* server/*"
           target: "/tmp/deploy"
 
       # Move files to correct locations and restart backend
@@ -73,7 +82,7 @@ jobs:
           script: |
             # Move frontend build to public folder
             rm -rf $${{ secrets.FRONTEND_PATH }}/*
-            mv /tmp/deploy/client/build/* $${{ secrets.FRONTEND_PATH }}/
+            mv /tmp/deploy/client/dist/* $${{ secrets.FRONTEND_PATH }}/
 
             # Move backend files
             rm -rf $${{ secrets.BACKEND_PATH }}/*
