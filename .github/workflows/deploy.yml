@@ -78,6 +78,7 @@ jobs:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
           source: "client/dist,server"
           target: "/tmp/deploy"
           debug: true
@@ -91,6 +92,7 @@ jobs:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
           script: |
             echo "Listing /tmp/deploy"
             ls -la /tmp/deploy
