@@ -3,7 +3,7 @@ name: Deploy to Shared Hosting
 on:
   push:
     branches:
-      - deploy
+      - main
 
 jobs:
   deploy:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' 
+          node-version: "18"
 
       # Cache frontend dependencies
       - name: Cache frontend dependencies
