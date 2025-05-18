@@ -63,53 +63,34 @@ jobs:
           echo "Listing server:"
           ls -la server || echo "server missing"
 
-      # Debug tar command
-      - name: Debug tar command
-        run: |
-          echo "Creating test tar archive"
-          tar -zcvf /tmp/test.tar.gz client/dist server --exclude=server/node_modules --exclude=server/.env --exclude=server/uploads || echo "tar failed"
-          echo "Listing tar contents"
-          tar -ztvf /tmp/test.tar.gz
-
-      # Deploy to shared hosting using SCP
-      - name: Deploy to server
-        uses: appleboy/scp-action@v0.1.7
+      # Deploy frontend via FTP
+      - name: Deploy frontend to server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          source: "client/dist,server"
-          target: "/tmp/deploy"
-          debug: true
-          rm: true
-          overwrite: true
+          local-dir: "./client/dist/"
+          server-dir: "${{ secrets.FRONTEND_PATH }}/"
+          exclude: |
+            **/node_modules/**
+            **/.env
+            **/uploads/**
+          log-level: verbose
 
-      # Move files to correct locations and restart backend
-      - name: Move files and restart backend
-        uses: appleboy/ssh-action@v1.0.3
+      # Deploy backend via FTP
+      - name: Deploy-backend to server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
-          script: |
-            echo "Listing /tmp/deploy"
-            ls -la /tmp/deploy
-            echo "Listing /tmp/deploy/client/dist"
-            ls -la /tmp/deploy/client/dist || echo "client/dist missing"
-            echo "Listing /tmp/deploy/server"
-            ls -la /tmp/deploy/server || echo "server missing"
-            # Move frontend build to public folder
-            rm -rf ${{ secrets.FRONTEND_PATH }}/*
-            mv /tmp/deploy/client/dist/* ${{ secrets.FRONTEND_PATH }}/
-            # Move backend files
-            rm -rf ${{ secrets.BACKEND_PATH }}/*
-            mv /tmp/deploy/server/* ${{ secrets.BACKEND_PATH }}/
-            # Install backend dependencies
-            cd ${{ secrets.BACKEND_PATH }}
-            npm install
-            # Restart backend (adjust command as needed)
-            pm2 restart server || echo "Failed to restart backend"
-            # Clean up temporary files
-            rm -rf /tmp/deploy
+          local-dir: "./server/"
+          server-dir: "${{ secrets.BACKEND_PATH }}/"
+          exclude: |
+            **/node_modules/**
+            **/.env
+            **/uploads/**
+          log-level: verbose
