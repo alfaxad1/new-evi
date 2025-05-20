@@ -25,7 +25,7 @@ const LoanProducts = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loanProducts`
+        `https://app.eviltd.co.ke/api/loanProducts`
       );
       setLoanProducts(response.data);
       console.log("Loan products:", response.data);

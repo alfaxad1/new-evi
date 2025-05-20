@@ -78,10 +78,9 @@ const updateLoanStatus = async (loanId, connection) => {
     console.log("Remaining balance: ", remainingBalance);
     console.log("Arrears: ", arrears);
 
-    if (installmentsSum >= total_amount) {
+    if (remainingBalance <= 0) {
       newStatus = "paid";
       newArrears = 0;
-      console.log("Setting to paid");
     } else if (installmentsSum > 0 && installmentsSum < total_amount) {
       newStatus = "partially_paid";
     } else if (new Date(due_date) < new Date() && arrears > 0) {
@@ -89,7 +88,6 @@ const updateLoanStatus = async (loanId, connection) => {
     } else {
       newStatus = "active";
     }
-
     // Update loan record
     await connection.query(
       `UPDATE loans 

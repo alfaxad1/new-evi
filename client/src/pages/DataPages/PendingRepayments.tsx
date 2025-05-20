@@ -46,7 +46,7 @@ const PendingRepayments = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/repayments/pending?role=${role}&officerId=${officerId}&page=${page}`
+        `https://app.eviltd.co.ke/api/repayments/pending?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log("Pending repayments fetched successfully:", response.data);
 
@@ -95,7 +95,7 @@ const PendingRepayments = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:8000/api/repayments/${repayment.id}`,
+        `https://app.eviltd.co.ke/api/repayments/${repayment.id}`,
         approvalData
       );
       console.log("Approved successfully:", response.data);
@@ -114,7 +114,7 @@ const PendingRepayments = () => {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" />
       <div className="relative mb-4">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
           <Search />

@@ -39,7 +39,7 @@ const DueToday = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loans/loan-details/due-today",
+        "https://app.eviltd.co.ke/api/loans/loan-details/due-today",
         {
           params: {
             role,

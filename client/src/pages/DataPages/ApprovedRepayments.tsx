@@ -39,7 +39,7 @@ const ApprovedRepayments = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/repayments/approved?role=${role}&officerId=${officerId}&page=${page}`
+        `https://app.eviltd.co.ke/api/repayments/approved?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log(
         "Approved repayments fetched successfully:",

@@ -10,8 +10,11 @@ import {
 } from "../../../src/components/ui/table";
 import Button from "../../components/ui/button/Button";
 import { Search } from "lucide-react";
+import { useNavigate } from "react-router";
+
 interface Loan {
   id: number;
+  customer_id: number;
   customer_name: string;
   national_id: string;
   loan_product: string;
@@ -31,6 +34,8 @@ const PaidLoans = () => {
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
+  const navigate = useNavigate();
+
   const fetchPaidLoans = async (
     role: string,
     officerId: string,
@@ -38,7 +43,7 @@ const PaidLoans = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details/paid?role=${role}&officerId=${officerId}&page=${page}`
+        `https://app.eviltd.co.ke/api/loans/loan-details/paid?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log(response.data.data);
       setLoansData(response.data.data);
@@ -124,6 +129,12 @@ const PaidLoans = () => {
                   >
                     Status
                   </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHeader>
 
@@ -153,6 +164,20 @@ const PaidLoans = () => {
                       >
                         {loan.status}
                       </span>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400 text-center">
+                      <button
+                        onClick={() => {
+                          localStorage.setItem(
+                            "customerId",
+                            loan.customer_id.toString()
+                          );
+                          navigate("/loan-application");
+                        }}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        Apply
+                      </button>
                     </TableCell>
                   </TableRow>
                 ))}

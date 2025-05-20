@@ -13,7 +13,7 @@ const fetchUser = async (
 ) => {
   try {
     const response = await axios.get(
-      `http://localhost:8000/api/users/${userId}`
+      `https://app.eviltd.co.ke/api/users/${userId}`
     );
     const user = response.data[0];
     setName(user.first_name.concat(" ", user.last_name));

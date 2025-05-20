@@ -384,7 +384,7 @@ const CustomerNew: React.FC = () => {
       });
 
       const response = await axios.post(
-        "http://localhost:8000/api/customerNew",
+        "https://app.eviltd.co.ke/api/customerNew",
         formDataToSend,
         {
           headers: {

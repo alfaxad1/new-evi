@@ -32,7 +32,7 @@ const LoanApplication = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loanProducts"
+        "https://app.eviltd.co.ke/api/loanProducts"
       );
       const formattedOptions = response.data.map(
         (product: { id: string; name: string }) => ({
@@ -102,7 +102,7 @@ const LoanApplication = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/loansApplication",
+        "https://app.eviltd.co.ke/api/loansApplication",
         formData
       );
       resetForm();

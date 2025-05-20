@@ -35,7 +35,8 @@ router.post("/bank-callback", async (req, res) => {
     }
 
     const phoneMatch = Narration.match(/2547\d{8}/);
-    const phoneNumber = phoneMatch ? phoneMatch[0] : "Not found";
+    //const phoneNumber = phoneMatch ? phoneMatch[0] : "Not found";
+    const phoneNumber = Narration.split("~")[2] || " ";
 
     const mpesaCode = Narration.split("~")[0] || " ";
 
@@ -62,7 +63,7 @@ const processPayment = async (paymentData) => {
   console.log("Processing payment data:", paymentData);
 
   const [loans] = await connection.query(
-    `SELECT * FROM loans WHERE status = 'active' OR status = 'partially_paid' AND phone_number = ?`,
+    `SELECT * FROM loans WHERE status = 'active' OR status = 'partially_paid' AND phone_number = ? ORDER BY id DESC LIMIT 1`,
     [paymentData.phoneNumber]
   );
 

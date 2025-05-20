@@ -34,7 +34,7 @@ const CompanyMonthlyDisbursements = () => {
   const fetchMonthlyCollections = useCallback(async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/monthly-active-loans-admin`,
+        `https://app.eviltd.co.ke/api/loans/monthly-active-loans-admin`,
         {
           params: {
             officerId,

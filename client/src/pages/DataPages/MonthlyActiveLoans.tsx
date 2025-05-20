@@ -52,7 +52,7 @@ const MonthlyActiveLoans = () => {
 
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/loans/monthly-active-loans",
+          "https://app.eviltd.co.ke/api/loans/monthly-active-loans",
           {
             params: {
               officerId,

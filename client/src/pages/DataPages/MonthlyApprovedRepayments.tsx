@@ -51,7 +51,7 @@ const MonthlyApprovedRepayments = () => {
 
       try {
         const response = await axios.get(
-          "http://localhost:8000/api/repayments/monthly-approved",
+          "https://app.eviltd.co.ke/api/repayments/monthly-approved",
           {
             params: {
               officerId,

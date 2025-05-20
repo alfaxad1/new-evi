@@ -42,7 +42,7 @@ const Defaulted = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details/defaulted?role=${role}&officerId=${officerId}&page=${page}`
+        `https://app.eviltd.co.ke/api/loans/loan-details/defaulted?role=${role}&officerId=${officerId}&page=${page}`
       );
       setDefaultedLoans(response.data.data);
       setTotalPages(response.data.meta.totalPages);

@@ -42,7 +42,7 @@ const Home = () => {
   const fetchLoans = async (role: string, officerId: string): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details/counts?role=${role}&officerId=${officerId}`
+        `https://app.eviltd.co.ke/api/loans/loan-details/counts?role=${role}&officerId=${officerId}`
       );
       console.log("Data fetched successfully:", response.data);
       setCounts(response.data); // Set the counts object
@@ -58,7 +58,7 @@ const Home = () => {
   const fetchDisbursed = async (officerId: string): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details/disbursed-amount?officerId=${officerId}`
+        `https://app.eviltd.co.ke/api/loans/loan-details/disbursed-amount?officerId=${officerId}`
       );
       console.log("Data fetched successfully:", response.data);
       setDisbursed(response.data.total_disbursed_amount);

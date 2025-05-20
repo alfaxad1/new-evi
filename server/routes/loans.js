@@ -34,74 +34,6 @@ const validateLoanData = [
   },
 ];
 
-// Get all loans with pagination and filters
-// router.get("/", async (req, res) => {
-//   try {
-//     const { page = 1, limit = 10, status, customerId, officerId } = req.query;
-//     const offset = (page - 1) * limit;
-
-//     let baseQuery = `
-//       SELECT l.*,
-//         c.first_name as customer_first_name,
-//         c.last_name as customer_last_name,
-//         u.first_name as officer_first_name,
-//         u.last_name as officer_last_name,
-//         lp.name as product_name
-//       FROM loans l
-//       JOIN customers c ON l.customer_id = c.id
-//       JOIN users u ON l.officer_id = u.id
-//       JOIN loan_applications la ON l.application_id = la.id
-//       JOIN loan_products lp ON la.product_id = lp.id
-//     `;
-//     const whereClauses = [];
-//     const queryParams = [];
-
-//     if (status) {
-//       whereClauses.push("l.status = ?");
-//       queryParams.push(status);
-//     }
-//     if (customerId) {
-//       whereClauses.push("l.customer_id = ?");
-//       queryParams.push(customerId);
-//     }
-//     if (officerId) {
-//       whereClauses.push("l.officer_id = ?");
-//       queryParams.push(officerId);
-//     }
-
-//     if (whereClauses.length > 0) {
-//       baseQuery += ` WHERE ${whereClauses.join(" AND ")}`;
-//     }
-
-//     // Get total count
-//     const [countResult] = await connection.query(
-//       `SELECT COUNT(*) as total FROM (${baseQuery}) as count_query`,
-//       queryParams
-//     );
-//     const total = countResult[0].total;
-
-//     // Add pagination and sorting
-//     const finalQuery = `${baseQuery} ORDER BY l.disbursement_date DESC LIMIT ? OFFSET ?`;
-//     const [loans] = await connection.query(finalQuery, [
-//       ...queryParams,
-//       parseInt(limit),
-//       offset,
-//     ]);
-
-//     res.status(200).json({
-//       data: loans,
-//       meta: {
-//         page: parseInt(page),
-//         limit: parseInt(limit),
-//         total,
-//         totalPages: Math.ceil(total / limit),
-//       },
-//     });
-//   } catch (err) {
-//     console.error("Error getting loans:", err);
-//     res.status(500).json({ error: "Failed to retrieve loans" });
-//   }
-// });
 
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
@@ -193,6 +125,7 @@ router.get("/loan-details/paid", async (req, res) => {
     let baseQuery = `
       SELECT 
         l.id,
+        c.id AS customer_id,
         CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
         c.national_id,
         c.phone,
@@ -740,10 +673,12 @@ router.get("/loan-details/due-today", async (req, res) => {
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE l.due_date = ? AND l.status IN ('active', 'partially_paid')
+      WHERE DATE(l.due_date) = CURRENT_DATE() AND l.status IN ('active', 'partially_paid')
     `;
 
-    const params = [new Date(), new Date()];
+    const params = [new Date()];
+
+    console.log("date: ", new Date());
 
     if (role === "officer") {
       sql += ` AND l.officer_id = ?`;
@@ -785,11 +720,11 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
-        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+        DATEDIFF(l.due_date, CURRENT_DATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) AND l.status = 'active' OR l.status = 'partially_paid'
+      WHERE DATE(l.due_date) = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) AND l.status IN ('active', 'partially_paid')
     `;
 
     const whereClauses = [];
@@ -852,11 +787,11 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
-        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+        DATEDIFF(l.due_date, CURRENT_DATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE l.due_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+      WHERE DATE(l.due_date) BETWEEN DATE_ADD(CURRENT_DATE(), INTERVAL 2 DAY) AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
         AND l.status IN ('active', 'partially_paid')
     `;
 
@@ -1006,36 +941,6 @@ router.get("/loan-details/defaulted", async (req, res) => {
   }
 });
 
-// Delete a loan (with validation)
-router.delete("/:id", async (req, res) => {
-  try {
-    // Check if loan has repayments
-    const [repayments] = await connection.query(
-      "SELECT id FROM repayments WHERE loan_id = ?",
-      [req.params.id]
-    );
-
-    if (repayments.length > 0) {
-      return res.status(400).json({
-        error: "Cannot delete loan with repayment history",
-      });
-    }
-
-    // Soft delete instead of hard delete
-    await connection.query(
-      "UPDATE loans SET status = 'archived', deleted_at = NOW() WHERE id = ?",
-      [req.params.id]
-    );
-
-    res.status(200).json({
-      message: "Loan archived successfully",
-    });
-  } catch (err) {
-    console.error("Error deleting loan:", err);
-    res.status(500).json({ error: "Failed to delete loan" });
-  }
-});
-
 //get counts
 router.get("/loan-details/counts", async (req, res) => {
   try {
@@ -1051,17 +956,17 @@ router.get("/loan-details/counts", async (req, res) => {
       SELECT 
         (SELECT COUNT(*) 
          FROM loans l 
-         WHERE l.due_date = CURDATE() 
+         WHERE DATE(l.due_date) = CURRENT_DATE() 
            AND l.status IN ('active', 'partially_paid') 
            ${officerFilter}) AS loans_due_today,
         (SELECT COUNT(*) 
          FROM loans l 
-         WHERE l.due_date = DATE_ADD(CURDATE(), INTERVAL 1 DAY) 
+         WHERE DATE(l.due_date) = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) 
            AND l.status IN ('active', 'partially_paid') 
            ${officerFilter}) AS loans_due_tomorrow,
         (SELECT COUNT(*) 
          FROM loans l 
-         WHERE l.due_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
+         WHERE DATE(l.due_date) BETWEEN DATE_ADD(CURRENT_DATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
            AND l.status IN ('active', 'partially_paid') 
            ${officerFilter}) AS loans_due_2_7_days,
         (SELECT COUNT(*) 

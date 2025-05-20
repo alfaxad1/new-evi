@@ -96,7 +96,7 @@ const Customers = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/customers?role=${role}&userId=${userId}&page=${page}`
+        `https://app.eviltd.co.ke/api/customers?role=${role}&userId=${userId}&page=${page}`
       );
       console.log("Data fetched successfully:", response.data);
       setCustomerData(response.data.data);
@@ -134,7 +134,7 @@ const Customers = () => {
   //   if (selectedCustomer) {
   //     try {
   //       const response = await axios.put(
-  //         `http://localhost:8000/api/customers/${selectedCustomer.id}`,
+  //         `https://app.eviltd.co.ke/api/customers/${selectedCustomer.id}`,
   //         selectedCustomer
   //       );
   //       console.log("Customer updated successfully:", response.data);
@@ -150,7 +150,7 @@ const Customers = () => {
     if (window.confirm("Are you sure you want to delete this customer?")) {
       try {
         const response = await axios.delete(
-          `http://localhost:8000/api/customers/${customer.id}`
+          `https://app.eviltd.co.ke/api/customers/${customer.id}`
         );
         console.log("Customer deleted successfully:", response.data);
         toast.success(response.data.message);
@@ -171,7 +171,7 @@ const Customers = () => {
   const handleViewClick = async (customerId: number) => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/customerNew/${customerId}`
+        `https://app.eviltd.co.ke/api/customerNew/${customerId}`
       );
       setViewCustomerDetails(response.data);
       openModal(); // Open the modal

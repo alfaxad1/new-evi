@@ -45,7 +45,7 @@ const AddLoanProduct = () => {
   const save = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/loanProducts`,
+        `https://app.eviltd.co.ke/api/loanProducts`,
         formData
       );
       console.log(response.data.message);

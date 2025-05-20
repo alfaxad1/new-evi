@@ -372,14 +372,14 @@ const AppSidebar: React.FC = () => {
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img
-                className="dark:hidden"
+                className="dark:hidden ml-8"
                 src="/images/logo/evi-logo.png"
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <img
-                className="hidden dark:block"
+                className="hidden dark:block ml-8"
                 src="/images/logo/evi-logo.png"
                 alt="Logo"
                 width={150}

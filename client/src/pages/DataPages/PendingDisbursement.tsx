@@ -45,7 +45,7 @@ const PendingDisbursement = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details/pending-disbursement?role=${role}&officerId=${officerId}`
+        `https://app.eviltd.co.ke/api/loans/loan-details/pending-disbursement?role=${role}&officerId=${officerId}`
       );
       console.log(
         "Pending disbursement loans fetched successfully:",
@@ -81,7 +81,7 @@ const PendingDisbursement = () => {
         return;
       }
       await axios.put(
-        `http://localhost:8000/api/loans/disburse/${selectedLoanId}`,
+        `https://app.eviltd.co.ke/api/loans/disburse/${selectedLoanId}`,
         { mpesaCode },
         {
           headers: {

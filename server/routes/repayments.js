@@ -101,6 +101,21 @@ router.get("/", async (req, res) => {
   }
 });
 
+//get all repayments for a certain loan
+router.get("/loan/:loanId", async (req, res) => {
+  try {
+    const loanId = req.params.loanId;
+    const [results] = await connection.query(
+      "SELECT * FROM repayments WHERE loan_id = ?",
+      [loanId]
+    );
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error getting repayments:", err);
+    res.status(500).json({ error: "Error getting repayments" });
+  }
+});
+
 // Get all pending repayments
 router.get("/pending", async (req, res) => {
   try {

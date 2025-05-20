@@ -34,7 +34,7 @@ const RejectedLoans = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
+        `https://app.eviltd.co.ke/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
       );
       console.log("Rejected loans fetched successfully:", response.data);
       setRejectedLoans(response.data);

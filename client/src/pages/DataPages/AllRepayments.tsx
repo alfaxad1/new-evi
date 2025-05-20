@@ -35,7 +35,7 @@ const AllRepayments = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/repayments?role=${role}&officerId=${officerId}&page=${page}`
+        `https://app.eviltd.co.ke/api/repayments?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log("repayments fetched successfully:", response.data.data);
       setRepayments(response.data.data);

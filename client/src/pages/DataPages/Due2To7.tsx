@@ -40,7 +40,7 @@ const Due2To7 = () => {
 
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/loans/loan-details/due-2-7-days",
+        "https://app.eviltd.co.ke/api/loans/loan-details/due-2-7-days",
         {
           params: {
             role,

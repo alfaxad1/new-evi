@@ -84,7 +84,10 @@ const AppHeader: React.FC = () => {
           </button>
 
           <Link to="/" className="lg:hidden">
-            <img
+            <h2 className="text-xl font-semibold text-blue-500 dark:text-white/90">
+              Evi Ventures Ltd
+            </h2>
+            {/* <img
               className="dark:hidden"
               src="./images/logo/evi-logo.png"
               alt="Logo"
@@ -93,7 +96,7 @@ const AppHeader: React.FC = () => {
               className="hidden dark:block"
               src="./images/logo/evi-logo.png"
               alt="Logo"
-            />
+            /> */}
           </Link>
 
           <button

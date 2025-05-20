@@ -48,7 +48,7 @@ const PendingLoans = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loansApplication/pending?role=${role}&officerId=${officerId}`
+        `https://app.eviltd.co.ke/api/loansApplication/pending?role=${role}&officerId=${officerId}`
       );
       console.log("Pending loans fetched successfully:", response.data);
       setPendingLoans(response.data.data);
@@ -80,7 +80,7 @@ const PendingLoans = () => {
         return;
       }
       await axios.put(
-        `http://localhost:8000/api/loansApplication/approve/${selectedApplicationId}`,
+        `https://app.eviltd.co.ke/api/loansApplication/approve/${selectedApplicationId}`,
         { disbursedAmount },
         {
           headers: {
@@ -129,7 +129,7 @@ const PendingLoans = () => {
         return;
       }
       await axios.put(
-        `http://localhost:8000/api/loansApplication/reject/${selectedApplicationId}`,
+        `https://app.eviltd.co.ke/api/loansApplication/reject/${selectedApplicationId}`,
         { reason: reason },
         {
           headers: {

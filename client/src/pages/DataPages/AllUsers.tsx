@@ -36,7 +36,7 @@ const AllUsers = () => {
         return;
       }
       const response = await axios.get(
-        `http://localhost:8000/api/users?page=${page}`,
+        `https://app.eviltd.co.ke/api/users?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

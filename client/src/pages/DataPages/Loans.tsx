@@ -16,7 +16,6 @@ import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
 import { Search } from "lucide-react";
 import Badge from "../../components/ui/badge/Badge";
-//import { useNavigate } from "react-router";
 
 interface Loan {
   id: number;
@@ -37,14 +36,33 @@ interface Loan {
   paid_amount: number;
   processing_fee: number;
 }
+
+interface Repayment {
+  id: number;
+  amount: number;
+  paid_date: string;
+  mpesa_code: string;
+}
+
 const Loans = () => {
-  const { isOpen, openModal, closeModal } = useModal();
+  const {
+    isOpen: isRepayModalOpen,
+    openModal: openRepayModal,
+    closeModal: closeRepayModal,
+  } = useModal();
+  const {
+    isOpen: isViewModalOpen,
+    openModal: openViewModal,
+    closeModal: closeViewModal,
+  } = useModal();
 
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
+  const [repaymentsData, setRepaymentsData] = useState<Repayment[]>([]);
 
   useEffect(() => {
     fetchLoans(role, officerId, page);
@@ -58,7 +76,7 @@ const Loans = () => {
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
+        `https://app.eviltd.co.ke/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log("Data fetched successfully:", response.data);
       setLoansData(response.data.data);
@@ -80,9 +98,6 @@ const Loans = () => {
     }
   };
 
-  //const [createdBy, setCreatedBy] = useState<number>(0);
-  const [loanId, setLoanId] = useState<number>(0);
-  //const [dueDate, setDueDate] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [mpesaCode, setMpesaCode] = useState<string>("");
   const [paidDate, setPaidDate] = useState<string>("");
@@ -92,19 +107,15 @@ const Loans = () => {
   useEffect(() => {
     setPaidDate(new Date().toISOString().split("T")[0]);
     setStatus("pending");
-    // setCreatedBy(parseInt(localStorage.getItem("userId") || "0"));
   }, []);
 
-  const handleRepay = async (loanId: number, dueDate: string) => {
-    console.log("loan ID:", loanId);
-    console.log("due date:", dueDate);
-    setLoanId(loanId);
-    //setDueDate(dueDate);
-    openModal();
+  const handleRepay = (loanId: number) => {
+    setSelectedLoanId(loanId);
+    openRepayModal();
   };
 
   const repaymentData = {
-    loanId,
+    loanId: selectedLoanId,
     amount,
     paidDate,
     status,
@@ -115,16 +126,32 @@ const Loans = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/repayments",
+        "https://app.eviltd.co.ke/api/repayments",
         repaymentData
       );
       console.log("Data posted successfully:", response.data);
       toast.success("Repayment saved successfully!");
       fetchLoans(role, officerId, page);
+      setAmount("");
+      setMpesaCode("");
     } catch (error) {
       console.error("Error posting data:", error);
     }
-    closeModal();
+    closeRepayModal();
+  };
+
+  const viewRepayments = async (loanId: number) => {
+    setSelectedLoanId(loanId);
+    try {
+      const response = await axios.get(
+        `https://app.eviltd.co.ke/api/repayments/loan/${loanId}`
+      );
+      console.log("Data fetched successfully:", response.data);
+      setRepaymentsData(response.data);
+      openViewModal();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   const filteredLoans = loansData.filter((loan) => {
@@ -135,7 +162,7 @@ const Loans = () => {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer position="bottom-right" />
 
       <div className="relative mb-4">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -288,13 +315,18 @@ const Loans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-center text-theme-sm dark:text-gray-400">
                       {loan.days_remaining}
                     </TableCell>
-
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <button
-                        onClick={() => handleRepay(loan.id, loan.due_date)}
-                        className="text-success-500 hover:text-success-700 ml-4"
+                        onClick={() => handleRepay(loan.id)}
+                        className="text-success-500 hover:text-success-700 mb-2"
                       >
                         Repay
+                      </button>
+                      <button
+                        onClick={() => viewRepayments(loan.id)}
+                        className="text-blue-500 hover:text-blue-700"
+                      >
+                        Repayments
                       </button>
                     </TableCell>
                   </TableRow>
@@ -329,11 +361,90 @@ const Loans = () => {
         </div>
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[400px] m-4">
+      {/* View Repayments Modal */}
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={closeViewModal}
+        className="max-w-[700px] m-4"
+      >
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Repayment
+              Repayments for Loan
+            </h4>
+          </div>
+          {repaymentsData ? (
+            <div className="mt-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Amount
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Mpesa Code
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Date
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Time
+                    </TableCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {repaymentsData.map((repayment) => (
+                    <TableRow key={repayment.id}>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {repayment.amount}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {repayment.mpesa_code}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {repayment.paid_date.split(" ")[0]}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {repayment.paid_date.split(" ")[1]}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <p className="mt-4">No repayments found for this loan.</p>
+          )}
+          <div className="flex justify-end mt-4">
+            <Button size="sm" variant="outline" onClick={closeViewModal}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Repayment Modal */}
+      <Modal
+        isOpen={isRepayModalOpen}
+        onClose={closeRepayModal}
+        className="max-w-[400px] m-4"
+      >
+        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Loan Repayment
             </h4>
           </div>
           <form className="flex flex-col" onSubmit={(e) => handleSaveClick(e)}>
@@ -344,7 +455,9 @@ const Loans = () => {
                     <Label>Amount</Label>
                     <Input
                       type="text"
+                      value={amount}
                       onChange={(e) => setAmount(e.target.value)}
+                      required
                     />
                   </div>
 
@@ -352,14 +465,16 @@ const Loans = () => {
                     <Label>Mpesa Code</Label>
                     <Input
                       type="text"
+                      value={mpesaCode}
                       onChange={(e) => setMpesaCode(e.target.value)}
+                      required
                     />
                   </div>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
+              <Button size="sm" variant="outline" onClick={closeRepayModal}>
                 Close
               </Button>
               <Button size="sm" type="submit">

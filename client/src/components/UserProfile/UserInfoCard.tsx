@@ -31,7 +31,7 @@ export default function UserInfoCard() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/users/${id}`);
+      const response = await axios.get(`https://app.eviltd.co.ke/api/users/${id}`);
       setData(response.data);
       console.log("Users fetched successfully:", response.data);
     } catch (error) {
