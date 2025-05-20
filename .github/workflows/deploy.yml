@@ -78,7 +78,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           local-dir: "./server/"
-          server-dir: "./"
+          server-dir: "./back"
           exclude: |
             **/node_modules/**
             **/.env
