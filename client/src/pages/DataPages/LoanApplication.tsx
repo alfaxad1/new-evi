@@ -1,7 +1,7 @@
 //import { useNavigate } from "react-router";
 import Input from "../../components/form/input/InputField";
 import Label from "../../components/form/Label";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Select from "../../components/form/Select";
 import axios from "axios";
 import Button from "../../components/ui/button/Button";
@@ -18,6 +18,8 @@ interface LoanApplicationData {
 }
 
 const LoanApplication = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [formData, setFormData] = useState<LoanApplicationData>({
     amount: 0,
     purpose: "",
@@ -29,11 +31,9 @@ const LoanApplication = () => {
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
     []
   );
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      const response = await axios.get(
-        "https://app.eviltd.co.ke/api/loanProducts"
-      );
+      const response = await axios.get(`${apiUrl}/api/loanProducts`);
       const formattedOptions = response.data.map(
         (product: { id: string; name: string }) => ({
           value: product.id,
@@ -45,10 +45,10 @@ const LoanApplication = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [apiUrl]);
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
 
   const handleSelectChange = (value: string) => {
     setFormData({
@@ -102,7 +102,7 @@ const LoanApplication = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://app.eviltd.co.ke/api/loansApplication",
+        `${apiUrl}/api/loansApplication`,
         formData
       );
       resetForm();

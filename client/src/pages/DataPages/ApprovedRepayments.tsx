@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "../../../src/components/ui/table";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Button from "../../components/ui/button/Button";
 import { Search } from "lucide-react";
 
@@ -21,6 +21,8 @@ interface ApprovedRepayment {
 }
 
 const ApprovedRepayments = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [approvedRepayments, setApprovedRepayments] = useState<
     ApprovedRepayment[]
   >([]);
@@ -32,14 +34,14 @@ const ApprovedRepayments = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchString, setSearchString] = useState<string>("");
 
-  const fetchApprovedRepayments = async (
+  const fetchApprovedRepayments = useCallback(async (
     role: string,
     officerId: string,
     page: number
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/repayments/approved?role=${role}&officerId=${officerId}&page=${page}`
+        `${apiUrl}/api/repayments/approved?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log(
         "Approved repayments fetched successfully:",
@@ -50,11 +52,11 @@ const ApprovedRepayments = () => {
     } catch (error) {
       console.error("Error fetching approved repayments:", error);
     }
-  };
+  }, [apiUrl]);
 
   useEffect(() => {
     fetchApprovedRepayments(role, officerId, page);
-  }, [role, officerId, page]);
+  }, [role, officerId, page, fetchApprovedRepayments]);
 
   const handleNextPage = () => {
     if (page < totalPages) {

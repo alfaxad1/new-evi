@@ -16,6 +16,8 @@ interface productData {
 }
 
 const AddLoanProduct = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+  
   const [formData, setFormData] = useState<productData>({
     name: "",
     description: "",
@@ -45,7 +47,7 @@ const AddLoanProduct = () => {
   const save = async () => {
     try {
       const response = await axios.post(
-        `https://app.eviltd.co.ke/api/loanProducts`,
+        `${apiUrl}/api/loanProducts`,
         formData
       );
       console.log(response.data.message);

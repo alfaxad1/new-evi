@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -29,6 +29,8 @@ interface pendingDisbursementLoan {
 }
 
 const PendingDisbursement = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const { isOpen, openModal, closeModal } = useModal();
   const [pendingLoans, setPendingLoans] = useState<pendingDisbursementLoan[]>(
     []
@@ -39,27 +41,27 @@ const PendingDisbursement = () => {
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
-  const fetchPendingDisbursementLoans = async (
-    role: string,
-    officerId: string
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/loan-details/pending-disbursement?role=${role}&officerId=${officerId}`
-      );
-      console.log(
-        "Pending disbursement loans fetched successfully:",
-        response.data
-      );
-      setPendingLoans(response.data);
-    } catch (error) {
-      console.error("Error fetching pending disbursement loans:", error);
-    }
-  };
+  const fetchPendingDisbursementLoans = useCallback(
+    async (role: string, officerId: string): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loans/loan-details/pending-disbursement?role=${role}&officerId=${officerId}`
+        );
+        console.log(
+          "Pending disbursement loans fetched successfully:",
+          response.data
+        );
+        setPendingLoans(response.data);
+      } catch (error) {
+        console.error("Error fetching pending disbursement loans:", error);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchPendingDisbursementLoans(role, officerId);
-  }, [role, officerId]);
+  }, [role, officerId, fetchPendingDisbursementLoans]);
 
   const handleDisburseClick = (loanId: number) => {
     setSelectedLoanId(loanId); // Set the loan ID for disbursement
@@ -81,7 +83,7 @@ const PendingDisbursement = () => {
         return;
       }
       await axios.put(
-        `https://app.eviltd.co.ke/api/loans/disburse/${selectedLoanId}`,
+        `${apiUrl}/api/loans/disburse/${selectedLoanId}`,
         { mpesaCode },
         {
           headers: {

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -24,27 +24,30 @@ interface rejectedLoans {
 }
 
 const RejectedLoans = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [rejectedLoans, setRejectedLoans] = useState<rejectedLoans[]>([]);
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
-  const fetchRejectedLoans = async (
+  const fetchRejectedLoans = useCallback(async (
     role: string,
     officerId: string
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
+        `${apiUrl}/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
       );
       console.log("Rejected loans fetched successfully:", response.data);
       setRejectedLoans(response.data);
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [apiUrl]);
   useEffect(() => {
     fetchRejectedLoans(role, officerId);
-  }, [role, officerId]);
+  }, [role, officerId, fetchRejectedLoans]);
+  
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-screen-lg mx-auto">

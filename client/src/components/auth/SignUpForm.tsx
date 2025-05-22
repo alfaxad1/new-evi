@@ -18,6 +18,8 @@ interface userData {
 }
 
 export default function SignUpForm() {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<userData>({
     firstName: "",
@@ -80,7 +82,7 @@ export default function SignUpForm() {
       }
 
       const response = await axios.post(
-        "https://app.eviltd.co.ke/api/users/register",
+        `${apiUrl}/api/users/register`,
         formDataToSend,
         {
           headers: {

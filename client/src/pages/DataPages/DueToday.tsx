@@ -24,6 +24,8 @@ interface DueLoan {
 }
 
 const DueToday = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [dueLoans, setDueLoans] = useState<DueLoan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ const DueToday = () => {
 
     try {
       const response = await axios.get(
-        "https://app.eviltd.co.ke/api/loans/loan-details/due-today",
+        `${apiUrl}/api/loans/loan-details/due-today`,
         {
           params: {
             role,
@@ -60,7 +62,7 @@ const DueToday = () => {
     } finally {
       setLoading(false);
     }
-  }, [role, officerId, page]);
+  }, [role, officerId, page, apiUrl]);
 
   useEffect(() => {
     fetchDueLoans();

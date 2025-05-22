@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import {
   Table,
@@ -70,6 +70,8 @@ interface ViewCustomerDetails {
 }
 
 const Customers = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const { isOpen, openModal, closeModal } = useModal();
   const navigate = useNavigate();
 
@@ -86,17 +88,15 @@ const Customers = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchString, setSearchString] = useState<string>("");
 
-  useEffect(() => {
-    fetchData(role, userId, page);
-  }, [role, userId, page]);
-  const fetchData = async (
+ 
+  const fetchData = useCallback(async (
     role: string,
     userId: string,
     page: number
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/customers?role=${role}&userId=${userId}&page=${page}`
+        `${apiUrl}/api/customers?role=${role}&userId=${userId}&page=${page}`
       );
       console.log("Data fetched successfully:", response.data);
       setCustomerData(response.data.data);
@@ -104,7 +104,10 @@ const Customers = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  };
+  }, [apiUrl]);
+  useEffect(() => {
+    fetchData(role, userId, page);
+  }, [role, userId, page, fetchData]);
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -134,7 +137,7 @@ const Customers = () => {
   //   if (selectedCustomer) {
   //     try {
   //       const response = await axios.put(
-  //         `https://app.eviltd.co.ke/api/customers/${selectedCustomer.id}`,
+  //         `${apiUrl}/api/customers/${selectedCustomer.id}`,
   //         selectedCustomer
   //       );
   //       console.log("Customer updated successfully:", response.data);
@@ -150,7 +153,7 @@ const Customers = () => {
     if (window.confirm("Are you sure you want to delete this customer?")) {
       try {
         const response = await axios.delete(
-          `https://app.eviltd.co.ke/api/customers/${customer.id}`
+          `${apiUrl}/api/customers/${customer.id}`
         );
         console.log("Customer deleted successfully:", response.data);
         toast.success(response.data.message);
@@ -171,7 +174,7 @@ const Customers = () => {
   const handleViewClick = async (customerId: number) => {
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/customerNew/${customerId}`
+        `${apiUrl}/api/customerNew/${customerId}`
       );
       setViewCustomerDetails(response.data);
       openModal(); // Open the modal

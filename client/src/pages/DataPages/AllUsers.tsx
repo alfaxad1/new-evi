@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import withAuth from "../../utils/withAuth";
 import axios from "axios";
 import {
@@ -24,11 +24,13 @@ interface User {
 }
 
 const AllUsers = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  const fetchUsers = async (page: number): Promise<void> => {
+  const fetchUsers = useCallback(async (page: number): Promise<void> => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -36,7 +38,7 @@ const AllUsers = () => {
         return;
       }
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/users?page=${page}`,
+        `${apiUrl}/api/users?page=${page}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -63,10 +65,10 @@ const AllUsers = () => {
         toast.error("An unexpected error occurred. Please try again.");
       }
     }
-  };
+  } ,[apiUrl]);
   useEffect(() => {
     fetchUsers(page);
-  }, [page]);
+  }, [page, fetchUsers]);
 
   const handleNextPage = () => {
     if (page < totalPages) {

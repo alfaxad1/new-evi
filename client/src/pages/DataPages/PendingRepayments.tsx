@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import Button from "../../components/ui/button/Button";
@@ -28,6 +28,8 @@ interface pendingRepayment {
 }
 
 const PendingRepayments = () => {
+ const apiUrl = process.env.REACT_APP_API_URL;
+  
   const [pendingRepayments, setPendingRepayments] = useState<
     pendingRepayment[]
   >([]);
@@ -39,14 +41,14 @@ const PendingRepayments = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchString, setSearchString] = useState<string>("");
 
-  const fetchPendingRepayments = async (
+  const fetchPendingRepayments = useCallback(async (
     role: string,
     officerId: string,
     page: number
   ): Promise<void> => {
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/repayments/pending?role=${role}&officerId=${officerId}&page=${page}`
+        `${apiUrl}/api/repayments/pending?role=${role}&officerId=${officerId}&page=${page}`
       );
       console.log("Pending repayments fetched successfully:", response.data);
 
@@ -55,10 +57,10 @@ const PendingRepayments = () => {
     } catch (error) {
       console.error("Error fetching pending repayments:", error);
     }
-  };
+  }, [apiUrl]);
   useEffect(() => {
     fetchPendingRepayments(role, officerId, page);
-  }, [role, officerId, page]);
+  }, [role, officerId, page, fetchPendingRepayments]);
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -95,7 +97,7 @@ const PendingRepayments = () => {
 
     try {
       const response = await axios.put(
-        `https://app.eviltd.co.ke/api/repayments/${repayment.id}`,
+        `${apiUrl}/api/repayments/${repayment.id}`,
         approvalData
       );
       console.log("Approved successfully:", response.data);

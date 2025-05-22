@@ -32,6 +32,8 @@ interface Summary {
 }
 
 const MonthlyApprovedRepayments = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [repayments, setRepayments] = useState<Repayment[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -51,7 +53,7 @@ const MonthlyApprovedRepayments = () => {
 
       try {
         const response = await axios.get(
-          "https://app.eviltd.co.ke/api/repayments/monthly-approved",
+          `${apiUrl}/api/repayments/monthly-approved`,
           {
             params: {
               officerId,
@@ -77,7 +79,7 @@ const MonthlyApprovedRepayments = () => {
         setLoading(false);
       }
     },
-    [officerId, currentMonth, currentYear]
+    [officerId, currentMonth, currentYear, apiUrl]
   );
 
   const handleNextPage = () => {

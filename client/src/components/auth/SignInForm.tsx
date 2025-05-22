@@ -8,6 +8,8 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function SignInForm() {
+  const apiUrl = process.env.REACT_APP_API_URL;
+  
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -24,10 +26,7 @@ export default function SignInForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
-        "https://app.eviltd.co.ke/api/users/login",
-        formData
-      );
+      const response = await axios.post(`${apiUrl}/api/users/login`, formData);
       console.log("Form submitted successfully:", response);
       if (response.data.token) {
         navigate("/");

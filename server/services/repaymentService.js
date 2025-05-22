@@ -1,11 +1,12 @@
 const express = require("express");
 const connection = require("../config/dbConnection");
 const { updateLoanStatus } = require("./loanService");
+const basicAuth = require("../middleware/auth");
 
 const router = express.Router();
 router.use(express.json());
 
-router.post("/bank-callback", async (req, res) => {
+router.post("/account-credit-notification", basicAuth, async (req, res) => {
   try {
     const {
       AcctNo,
@@ -35,8 +36,8 @@ router.post("/bank-callback", async (req, res) => {
     }
 
     const phoneMatch = Narration.match(/2547\d{8}/);
-    //const phoneNumber = phoneMatch ? phoneMatch[0] : "Not found";
-    const phoneNumber = Narration.split("~")[2] || " ";
+    const phoneNumber = phoneMatch ? phoneMatch[0] : "Not found";
+    //const phoneNumber = Narration.split("~")[2] || " ";
 
     const mpesaCode = Narration.split("~")[0] || " ";
 
@@ -63,7 +64,7 @@ const processPayment = async (paymentData) => {
   console.log("Processing payment data:", paymentData);
 
   const [loans] = await connection.query(
-    `SELECT * FROM loans WHERE status = 'active' OR status = 'partially_paid' AND phone_number = ? ORDER BY id DESC LIMIT 1`,
+    `SELECT * FROM loans WHERE status IN ('active', 'partially_paid') AND phone_number = ? ORDER BY id DESC LIMIT 1`,
     [paymentData.phoneNumber]
   );
 
@@ -93,8 +94,8 @@ const processPayment = async (paymentData) => {
     await connection.query(
       `UPDATE loans 
       SET arrears = ?, due_date = ? 
-      WHERE id = ?`,
-      [newArrears, nextDueDate, loanId]
+      WHERE id = ? AND phone_number = ? AND status IN ('active', 'partially_paid')`,
+      [newArrears, nextDueDate, loanId, paymentData.phoneNumber]
     );
 
     // Record repayment

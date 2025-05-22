@@ -1,6 +1,6 @@
 import axios from "axios";
 import withAuth from "../../utils/withAuth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -27,6 +27,8 @@ interface Loan {
 }
 
 const PaidLoans = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [loansData, setLoansData] = useState<Loan[]>([]);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -36,26 +38,25 @@ const PaidLoans = () => {
 
   const navigate = useNavigate();
 
-  const fetchPaidLoans = async (
-    role: string,
-    officerId: string,
-    page: number
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/loan-details/paid?role=${role}&officerId=${officerId}&page=${page}`
-      );
-      console.log(response.data.data);
-      setLoansData(response.data.data);
-      setTotalPages(response.data.meta.totalPages);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const fetchPaidLoans = useCallback(
+    async (role: string, officerId: string, page: number): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loans/loan-details/paid?role=${role}&officerId=${officerId}&page=${page}`
+        );
+        console.log(response.data.data);
+        setLoansData(response.data.data);
+        setTotalPages(response.data.meta.totalPages);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchPaidLoans(role, officerId, page);
-  }, [role, officerId, page]);
+  }, [role, officerId, page, fetchPaidLoans]);
 
   const handleNextPage = () => {
     if (page < totalPages) {

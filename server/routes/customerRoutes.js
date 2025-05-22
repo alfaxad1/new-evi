@@ -29,7 +29,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fileSize: 20 * 1024 * 1024, // 5MB limit
   },
 });
 
@@ -70,10 +70,8 @@ router.post(
       //await connection.beginTransaction();
 
       function standardizePhone(phone) {
-       
         phone = phone.replace(/[^0-9+]/g, "");
 
-        
         if (/^0[0-9]{8,9}$/.test(phone)) {
           return "254" + phone.slice(1);
         } else if (/^\+254[0-9]{8,9}$/.test(phone)) {

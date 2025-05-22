@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -26,6 +26,8 @@ interface DefaultedLoan {
 }
 
 const Defaulted = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [defaultedLoans, setDefaultedLoans] = useState<DefaultedLoan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -35,27 +37,26 @@ const Defaulted = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
 
-  const fetchDefaultedLoans = async (
-    role: string,
-    officerId: string,
-    page: number
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/loan-details/defaulted?role=${role}&officerId=${officerId}&page=${page}`
-      );
-      setDefaultedLoans(response.data.data);
-      setTotalPages(response.data.meta.totalPages);
-    } catch (error) {
-      console.error("Error fetching defaulted loans:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchDefaultedLoans = useCallback(
+    async (role: string, officerId: string, page: number): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loans/loan-details/defaulted?role=${role}&officerId=${officerId}&page=${page}`
+        );
+        setDefaultedLoans(response.data.data);
+        setTotalPages(response.data.meta.totalPages);
+      } catch (error) {
+        console.error("Error fetching defaulted loans:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchDefaultedLoans(role, officerId, page);
-  }, [role, officerId, page]);
+  }, [role, officerId, page, fetchDefaultedLoans]);
 
   const handleNextPage = () => {
     if (page < totalPages) {

@@ -33,13 +33,14 @@ interface Summary {
 }
 
 const MonthlyActiveLoans = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [loans, setLoans] = useState<Loan[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const officerId = localStorage.getItem("userId") || "";
-  const currentMonth = new Date().getMonth() + 1; // JavaScript months are 0-based
+  const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
   const [page, setPage] = useState<number>(1);
@@ -52,7 +53,7 @@ const MonthlyActiveLoans = () => {
 
       try {
         const response = await axios.get(
-          "https://app.eviltd.co.ke/api/loans/monthly-active-loans",
+          `${apiUrl}/api/loans/monthly-active-loans`,
           {
             params: {
               officerId,
@@ -76,7 +77,7 @@ const MonthlyActiveLoans = () => {
         setLoading(false);
       }
     },
-    [officerId, currentMonth, currentYear]
+    [officerId, currentMonth, currentYear, apiUrl]
   );
 
   const handleNextPage = () => {

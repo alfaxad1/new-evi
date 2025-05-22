@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -31,6 +31,8 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
   const { isOpen, openModal, closeModal } = useModal();
@@ -42,24 +44,24 @@ const PendingLoans = () => {
   const [reason, setReason] = useState<string>("");
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
 
-  const fetchPendingLoans = async (
-    role: string,
-    officerId: string
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loansApplication/pending?role=${role}&officerId=${officerId}`
-      );
-      console.log("Pending loans fetched successfully:", response.data);
-      setPendingLoans(response.data.data);
-    } catch (error) {
-      console.error("Error fetching pending loans:", error);
-    }
-  };
+  const fetchPendingLoans = useCallback(
+    async (role: string, officerId: string): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loansApplication/pending?role=${role}&officerId=${officerId}`
+        );
+        console.log("Pending loans fetched successfully:", response.data);
+        setPendingLoans(response.data.data);
+      } catch (error) {
+        console.error("Error fetching pending loans:", error);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchPendingLoans(role, officerId);
-  }, [role, officerId]);
+  }, [role, officerId, fetchPendingLoans]);
 
   const handleApproveClick = (applicationId: number) => {
     setSelectedApplicationId(applicationId); // Set the application ID for approval
@@ -80,7 +82,7 @@ const PendingLoans = () => {
         return;
       }
       await axios.put(
-        `https://app.eviltd.co.ke/api/loansApplication/approve/${selectedApplicationId}`,
+        `${apiUrl}/api/loansApplication/approve/${selectedApplicationId}`,
         { disbursedAmount },
         {
           headers: {
@@ -129,7 +131,7 @@ const PendingLoans = () => {
         return;
       }
       await axios.put(
-        `https://app.eviltd.co.ke/api/loansApplication/reject/${selectedApplicationId}`,
+        `${apiUrl}/api/loansApplication/reject/${selectedApplicationId}`,
         { reason: reason },
         {
           headers: {

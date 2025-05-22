@@ -1,6 +1,6 @@
 import axios from "axios";
 import withAuth from "../../utils/withAuth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -17,25 +17,25 @@ interface loanProduct {
   min_amount: string;
   max_amount: string;
   duration_days: number;
-  
 }
 
 const LoanProducts = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [loanProducts, setLoanProducts] = useState<loanProduct[]>([]);
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loanProducts`
-      );
+      const response = await axios.get(`${apiUrl}/api/loanProducts`);
       setLoanProducts(response.data);
       console.log("Loan products:", response.data);
     } catch (error) {
       console.error("Error fetching loan products:", error);
     }
-  };
+  }, [apiUrl]);
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [fetchProducts]);
+
   return (
     <>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -81,7 +81,6 @@ const LoanProducts = () => {
                   >
                     Duration
                   </TableCell>
-                  
                 </TableRow>
               </TableHeader>
 
@@ -113,7 +112,6 @@ const LoanProducts = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {product.duration_days} days
                     </TableCell>
-                    
                   </TableRow>
                 ))}
               </TableBody>

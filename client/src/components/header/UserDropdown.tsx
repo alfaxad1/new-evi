@@ -5,6 +5,8 @@ import { Link } from "react-router";
 import axios from "axios";
 import { logoutUser } from "../../utils/authUtils";
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 const fetchUser = async (
   userId: string | null,
   setName: React.Dispatch<React.SetStateAction<string>>,
@@ -12,9 +14,7 @@ const fetchUser = async (
   setAvatar: React.Dispatch<React.SetStateAction<string>>
 ) => {
   try {
-    const response = await axios.get(
-      `https://app.eviltd.co.ke/api/users/${userId}`
-    );
+    const response = await axios.get(`${apiUrl}/api/users/${userId}`);
     const user = response.data[0];
     setName(user.first_name.concat(" ", user.last_name));
     setEmail(user.email);

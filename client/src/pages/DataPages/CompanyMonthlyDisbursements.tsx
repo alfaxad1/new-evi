@@ -24,6 +24,8 @@ interface Summary {
 }
 
 const CompanyMonthlyDisbursements = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
 
@@ -34,7 +36,7 @@ const CompanyMonthlyDisbursements = () => {
   const fetchMonthlyCollections = useCallback(async () => {
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/monthly-active-loans-admin`,
+        `${apiUrl}/api/loans/monthly-active-loans-admin`,
         {
           params: {
             officerId,
@@ -49,7 +51,7 @@ const CompanyMonthlyDisbursements = () => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
-  }, [officerId, currentMonth, currentYear]);
+  }, [officerId, currentMonth, currentYear, apiUrl]);
   useEffect(() => {
     fetchMonthlyCollections();
   }, [fetchMonthlyCollections]);

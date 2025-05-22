@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import withAuth from "../../utils/withAuth";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 
 interface Count {
@@ -26,6 +26,8 @@ interface Count {
 }
 
 const Home = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
@@ -39,37 +41,43 @@ const Home = () => {
     }
   }, [role]);
 
-  const fetchLoans = async (role: string, officerId: string): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/loan-details/counts?role=${role}&officerId=${officerId}`
-      );
-      console.log("Data fetched successfully:", response.data);
-      setCounts(response.data); // Set the counts object
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  const fetchLoans = useCallback(
+    async (role: string, officerId: string): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loans/loan-details/counts?role=${role}&officerId=${officerId}`
+        );
+        console.log("Data fetched successfully:", response.data);
+        setCounts(response.data); // Set the counts object
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchLoans(role, officerId);
-  }, [role, officerId]);
+  }, [role, officerId, fetchLoans]);
 
-  const fetchDisbursed = async (officerId: string): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/loan-details/disbursed-amount?officerId=${officerId}`
-      );
-      console.log("Data fetched successfully:", response.data);
-      setDisbursed(response.data.total_disbursed_amount);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  const fetchDisbursed = useCallback(
+    async (officerId: string): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loans/loan-details/disbursed-amount?officerId=${officerId}`
+        );
+        console.log("Data fetched successfully:", response.data);
+        setDisbursed(response.data.total_disbursed_amount);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchDisbursed(officerId);
-  }, [officerId]);
+  }, [officerId, fetchDisbursed]);
 
   if (!counts) {
     return <p>Loading...</p>; // Show a loading message while data is being fetched

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -45,6 +45,8 @@ interface Repayment {
 }
 
 const Loans = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const {
     isOpen: isRepayModalOpen,
     openModal: openRepayModal,
@@ -64,27 +66,26 @@ const Loans = () => {
   const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
   const [repaymentsData, setRepaymentsData] = useState<Repayment[]>([]);
 
+  const [loansData, setLoansData] = useState<Loan[]>([]);
+  const fetchLoans = useCallback(
+    async (role: string, officerId: string, page: number): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
+        );
+        console.log("Data fetched successfully:", response.data);
+        setLoansData(response.data.data);
+        setTotalPages(response.data.meta.totalPages);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    },
+    [apiUrl]
+  );
+
   useEffect(() => {
     fetchLoans(role, officerId, page);
-  }, [role, officerId, page]);
-
-  const [loansData, setLoansData] = useState<Loan[]>([]);
-  const fetchLoans = async (
-    role: string,
-    officerId: string,
-    page: number
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `https://app.eviltd.co.ke/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
-      );
-      console.log("Data fetched successfully:", response.data);
-      setLoansData(response.data.data);
-      setTotalPages(response.data.meta.totalPages);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+  }, [fetchLoans, role, officerId, page]);
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -126,7 +127,7 @@ const Loans = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://app.eviltd.co.ke/api/repayments",
+        `${apiUrl}/api/repayments`,
         repaymentData
       );
       console.log("Data posted successfully:", response.data);
@@ -144,7 +145,7 @@ const Loans = () => {
     setSelectedLoanId(loanId);
     try {
       const response = await axios.get(
-        `https://app.eviltd.co.ke/api/repayments/loan/${loanId}`
+        `${apiUrl}/api/repayments/loan/${loanId}`
       );
       console.log("Data fetched successfully:", response.data);
       setRepaymentsData(response.data);

@@ -59,6 +59,8 @@ type CustomerFormData = {
 };
 
 const CustomerNew: React.FC = () => {
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   const userId = localStorage.getItem("userId");
   const initialFormData: CustomerFormData = {
     first_name: "",
@@ -384,7 +386,7 @@ const CustomerNew: React.FC = () => {
       });
 
       const response = await axios.post(
-        "https://app.eviltd.co.ke/api/customerNew",
+        `${apiUrl}/api/customerNew`,
         formDataToSend,
         {
           headers: {
