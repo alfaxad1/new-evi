@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import axios from "axios";
 import { logoutUser } from "../../utils/authUtils";
 
-const apiUrl = process.env.REACT_APP_API_URL;
+const apiUrl = import.meta.env.REACT_APP_API_URL;
 
 const fetchUser = async (
   userId: string | null,

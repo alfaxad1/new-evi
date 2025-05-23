@@ -24,7 +24,7 @@ interface User {
 }
 
 const AllUsers = () => {
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.REACT_APP_API_URL;
 
   const [users, setUsers] = useState<User[]>([]);
   const [page, setPage] = useState<number>(1);

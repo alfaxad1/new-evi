@@ -18,7 +18,7 @@ interface userData {
 }
 
 export default function SignUpForm() {
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.REACT_APP_API_URL;
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<userData>({

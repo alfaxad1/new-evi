@@ -28,7 +28,7 @@ interface pendingRepayment {
 }
 
 const PendingRepayments = () => {
- const apiUrl = process.env.REACT_APP_API_URL;
+ const apiUrl = import.meta.env.REACT_APP_API_URL;
   
   const [pendingRepayments, setPendingRepayments] = useState<
     pendingRepayment[]

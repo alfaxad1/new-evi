@@ -26,7 +26,7 @@ interface DefaultedLoan {
 }
 
 const Defaulted = () => {
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.REACT_APP_API_URL;
 
   const [defaultedLoans, setDefaultedLoans] = useState<DefaultedLoan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
