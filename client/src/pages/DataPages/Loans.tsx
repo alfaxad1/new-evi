@@ -28,6 +28,7 @@ interface Loan {
   remaining_balance: number;
   status: string;
   due_date: string;
+  expected_completion_date: string;
   days_remaining: number;
   total_interest: number;
   installment_amount: number;
@@ -45,7 +46,7 @@ interface Repayment {
 }
 
 const Loans = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const {
     isOpen: isRepayModalOpen,
@@ -311,7 +312,9 @@ const Loans = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.due_date ? loan.due_date.split("T")[0] : "N/A"}
+                      {loan.expected_completion_date
+                        ? loan.expected_completion_date.split("T")[0]
+                        : "N/A"}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-center text-theme-sm dark:text-gray-400">
                       {loan.days_remaining}

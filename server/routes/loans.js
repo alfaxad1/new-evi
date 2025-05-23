@@ -34,7 +34,6 @@ const validateLoanData = [
   },
 ];
 
-
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
   try {
@@ -51,6 +50,7 @@ router.get("/loan-details", async (req, res) => {
         l.purpose, 
         l.disbursement_date,
         l.due_date,
+        l.expected_completion_date,
         l.installment_amount,
         l.principal,
         l.total_interest,
@@ -64,7 +64,7 @@ router.get("/loan-details", async (req, res) => {
           l.remaining_balance, 
           (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0))
         ) as remaining_balance,
-        DATEDIFF(l.due_date, CURDATE()) as days_remaining
+        DATEDIFF(l.expected_completion_date, CURDATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id 
@@ -669,11 +669,12 @@ router.get("/loan-details/due-today", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
-        DATEDIFF(l.due_date, ?) as days_remaining
+        l.expected_completion_date,
+        DATEDIFF(l.expected_completion_date, ?) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE DATE(l.due_date) = CURRENT_DATE() AND l.status IN ('active', 'partially_paid')
+      WHERE DATE(l.expected_completion_date) = CURRENT_DATE() AND l.status IN ('active', 'partially_paid')
     `;
 
     const params = [new Date()];
@@ -720,11 +721,12 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
-        DATEDIFF(l.due_date, CURRENT_DATE()) as days_remaining
+        l.expected_completion_date,
+        DATEDIFF(l.expected_completion_date, CURRENT_DATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE DATE(l.due_date) = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) AND l.status IN ('active', 'partially_paid')
+      WHERE DATE(l.expected_completion_date) = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) AND l.status IN ('active', 'partially_paid')
     `;
 
     const whereClauses = [];
@@ -787,11 +789,12 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
-        DATEDIFF(l.due_date, CURRENT_DATE()) as days_remaining
+        l.expected_completion_date,
+        DATEDIFF(l.expected_completion_date, CURRENT_DATE()) as days_remaining
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
-      WHERE DATE(l.due_date) BETWEEN DATE_ADD(CURRENT_DATE(), INTERVAL 2 DAY) AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
+      WHERE DATE(l.expected_completion_date) BETWEEN DATE_ADD(CURRENT_DATE(), INTERVAL 2 DAY) AND DATE_ADD(CURRENT_DATE(), INTERVAL 7 DAY)
         AND l.status IN ('active', 'partially_paid')
     `;
 
@@ -890,8 +893,10 @@ router.get("/loan-details/defaulted", async (req, res) => {
         l.total_interest,
         l.total_amount,
         l.due_date,
+        l.status,
         l.default_date,
-        DATEDIFF(CURDATE(), l.due_date) as days_overdue
+        l.expected_completion_date,
+        DATEDIFF(CURDATE(), l.expected_completion_date) as days_overdue
       FROM loans l
       JOIN customers c ON l.customer_id = c.id
       JOIN loan_products lp ON l.product_id = lp.id
@@ -956,17 +961,17 @@ router.get("/loan-details/counts", async (req, res) => {
       SELECT 
         (SELECT COUNT(*) 
          FROM loans l 
-         WHERE DATE(l.due_date) = CURRENT_DATE() 
+         WHERE DATE(l.expected_completion_date) = CURRENT_DATE() 
            AND l.status IN ('active', 'partially_paid') 
            ${officerFilter}) AS loans_due_today,
         (SELECT COUNT(*) 
          FROM loans l 
-         WHERE DATE(l.due_date) = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) 
+         WHERE DATE(l.expected_completion_date) = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY) 
            AND l.status IN ('active', 'partially_paid') 
            ${officerFilter}) AS loans_due_tomorrow,
         (SELECT COUNT(*) 
          FROM loans l 
-         WHERE DATE(l.due_date) BETWEEN DATE_ADD(CURRENT_DATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
+         WHERE DATE(l.expected_completion_date) BETWEEN DATE_ADD(CURRENT_DATE(), INTERVAL 2 DAY) AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) 
            AND l.status IN ('active', 'partially_paid') 
            ${officerFilter}) AS loans_due_2_7_days,
         (SELECT COUNT(*) 

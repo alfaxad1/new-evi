@@ -22,9 +22,14 @@ const checkLoanDefaults = async (connection) => {
   try {
     // Find loans past their expected completion date
     const [defaultedLoans] = await connection.query(`
-      SELECT id 
-      FROM loans 
-      WHERE status = 'active' 
+      SELECT 
+      l.id, 
+      l.total_amount, 
+      l.remaining_balance, 
+      CONCAT(c.first_name, ' ', c.last_name) AS customer_name
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id 
+      WHERE status IN ('active', 'partially_paid') 
       AND expected_completion_date < CURDATE()
     `);
 
@@ -32,11 +37,14 @@ const checkLoanDefaults = async (connection) => {
     for (const loan of defaultedLoans) {
       await connection.query(
         `UPDATE loans 
-        SET status = 'defaulted' 
+        SET status = 'defaulted', 
+        default_date = NOW() 
         WHERE id = ?`,
         [loan.id]
       );
     }
+
+    return defaultedLoans;
   } catch (err) {
     console.error("Error checking loan defaults:", err);
     throw err;

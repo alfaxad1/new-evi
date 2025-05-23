@@ -21,10 +21,11 @@ interface DueLoan {
   total_interest: number;
   total_amount: number;
   due_date: string;
+  expected_completion_date: string;
 }
 
 const DueToday = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [dueLoans, setDueLoans] = useState<DueLoan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -182,7 +183,7 @@ const DueToday = () => {
                       {loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.due_date}
+                      {loan.expected_completion_date.split("T")[0]}
                     </TableCell>
                   </TableRow>
                 ))}
