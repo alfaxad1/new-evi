@@ -25,7 +25,7 @@ interface DueLoan {
 }
 
 const Due2To7 = () => {
-  const apiUrl = import.meta.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL
 
   const [dueLoans, setDueLoans] = useState<DueLoan[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

@@ -8,9 +8,9 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function SignInForm() {
-  const apiUrl = import.meta.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
-  console.log(apiUrl);
+  console.log("URL: ", apiUrl);
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({

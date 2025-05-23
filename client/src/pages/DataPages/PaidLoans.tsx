@@ -27,7 +27,7 @@ interface Loan {
 }
 
 const PaidLoans = () => {
-  const apiUrl = import.meta.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL
 
   const [loansData, setLoansData] = useState<Loan[]>([]);
   const [page, setPage] = useState<number>(1);

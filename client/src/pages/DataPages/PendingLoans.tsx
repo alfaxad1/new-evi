@@ -31,7 +31,7 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
-  const apiUrl = import.meta.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL
 
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";

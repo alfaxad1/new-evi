@@ -24,7 +24,7 @@ interface Summary {
 }
 
 const CompanyMonthlyDisbursements = () => {
-  const apiUrl = import.meta.env.REACT_APP_API_URL;
+  const apiUrl = import.meta.env.VITE_API_URL
 
   const [officers, setOfficers] = useState<Officer[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);

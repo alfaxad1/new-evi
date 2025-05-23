@@ -16,6 +16,7 @@ interface User {
 }
 
 export default function UserInfoCard() {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const { isOpen, closeModal } = useModal();
 
   const handleSave = () => {
@@ -31,13 +32,13 @@ export default function UserInfoCard() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await axios.get(`https://app.eviltd.co.ke/api/users/${id}`);
+      const response = await axios.get(`${apiUrl}/api/users/${id}`);
       setData(response.data);
       console.log("Users fetched successfully:", response.data);
     } catch (error) {
       console.log("Error fetching users:", error);
     }
-  }, [id]);
+  }, [id, apiUrl]);
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
