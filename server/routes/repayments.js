@@ -239,7 +239,7 @@ router.get("/approved", async (req, res) => {
 // Get monthly approved repayments for a specific officer with summary
 router.get("/monthly-approved", async (req, res) => {
   try {
-    const { officerId, month, year, page = 1, limit = 10 } = req.query;
+    const { officerId, month, year, page = 1, limit = 5 } = req.query;
 
     if (!officerId || !month || !year) {
       return res.status(400).json({

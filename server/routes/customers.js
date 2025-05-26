@@ -47,7 +47,7 @@ router.get("/", async (req, res) => {
         u.first_name AS created_by_name
       FROM customers c
       LEFT JOIN users u ON c.created_by = u.id
-      WHERE c.is_active = TRUE
+      WHERE c.is_active = TRUE 
     `;
     let queryParams = [];
 

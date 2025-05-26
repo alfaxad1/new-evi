@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../../src/components/ui/table";
+
 import withAuth from "../../utils/withAuth";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
@@ -58,6 +59,11 @@ const Loans = () => {
     openModal: openViewModal,
     closeModal: closeViewModal,
   } = useModal();
+  const {
+    isOpen: isDetailsModalOpen,
+    openModal: openDetailsModal,
+    closeModal: closeDetailsModal,
+  } = useModal();
 
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
@@ -66,8 +72,9 @@ const Loans = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
   const [repaymentsData, setRepaymentsData] = useState<Repayment[]>([]);
-
   const [loansData, setLoansData] = useState<Loan[]>([]);
+  const [details, setDetails] = useState<Loan | null>(null);
+
   const fetchLoans = useCallback(
     async (role: string, officerId: string, page: number): Promise<void> => {
       try {
@@ -156,6 +163,20 @@ const Loans = () => {
     }
   };
 
+  const viewLoanDetails = async (loanId: number) => {
+    //setSelectedLoanId(loanId);
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/loans/loan-details/${loanId}`
+      );
+      console.log("Data fetched successfully:", response.data);
+      setDetails(response.data);
+      openDetailsModal();
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
   const filteredLoans = loansData.filter((loan) => {
     return loan.customer_name
       .toLowerCase()
@@ -192,49 +213,14 @@ const Loans = () => {
                   >
                     Customer Name
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Installment
-                  </TableCell>
 
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Principal
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Interest
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Processing Fee
-                  </TableCell>
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Loan Amount
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Arrears
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Paid Amount
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -254,12 +240,7 @@ const Loans = () => {
                   >
                     Due Date
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Days Remaining
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -277,28 +258,10 @@ const Loans = () => {
                       {loan.customer_name}
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.installment_amount}
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.principal}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.total_interest}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.processing_fee}
-                    </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.total_amount}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.arrears}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.paid_amount}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.remaining_balance}
                     </TableCell>
@@ -316,22 +279,28 @@ const Loans = () => {
                         ? loan.expected_completion_date.split("T")[0]
                         : "N/A"}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-center text-theme-sm dark:text-gray-400">
-                      {loan.days_remaining}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <button
-                        onClick={() => handleRepay(loan.id)}
-                        className="text-success-500 hover:text-success-700 mb-2"
-                      >
-                        Repay
-                      </button>
-                      <button
-                        onClick={() => viewRepayments(loan.id)}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        Repayments
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleRepay(loan.id)}
+                          className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                          Repay
+                        </button>
+                        <button
+                          onClick={() => viewRepayments(loan.id)}
+                          className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        >
+                          Repayments
+                        </button>
+                        <button
+                          onClick={() => viewLoanDetails(loan.id)}
+                          className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                          View
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -486,6 +455,87 @@ const Loans = () => {
               </Button>
             </div>
           </form>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDetailsModalOpen}
+        onClose={closeDetailsModal}
+        className="max-w-[400px] m-4"
+      >
+        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Loan Details
+            </h4>
+          </div>
+          {details ? (
+            <div className="mt-4">
+              <p>
+                <strong>Customer Name:</strong> {details.customer_name}
+              </p>
+              <p>
+                <strong>National ID:</strong> {details.national_id}
+              </p>
+              <p>
+                <strong>Loan Product:</strong> {details.loan_product}
+              </p>
+              <p>
+                <strong>Purpose:</strong> {details.purpose}
+              </p>
+              <p>
+                <strong>Principal:</strong> {details.principal}
+              </p>
+              <p>
+                <strong>Total Amount:</strong> {details.total_amount}
+              </p>
+              <p>
+                <strong>Remaining Balance:</strong> {details.remaining_balance}
+              </p>
+              <p>
+                <strong>Status:</strong>{" "}
+                {details.status === "partially_paid"
+                  ? "partially paid"
+                  : details.status}
+              </p>
+              <p>
+                <strong>Due Date:</strong> {details.due_date.split("T")[0]}
+              </p>
+              <p>
+                <strong>Expected Completion:</strong>{" "}
+                {details.expected_completion_date.split("T")[0]}
+              </p>
+              <p>
+                <strong>Days Remaining:</strong> {details.days_remaining}
+              </p>
+              <p>
+                <strong>Total Interest:</strong> {details.total_interest}
+              </p>
+              <p>
+                <strong>Installment Amount:</strong>{" "}
+                {details.installment_amount}
+              </p>
+              <p>
+                <strong>Arrears:</strong> {details.arrears}
+              </p>
+              <p>
+                <strong>Installment Sum:</strong> {details.installment_sum}
+              </p>
+              <p>
+                <strong>Paid Amount:</strong> {details.paid_amount}
+              </p>
+              <p>
+                <strong>Processing Fee:</strong> {details.processing_fee}
+              </p>
+            </div>
+          ) : (
+            <p>No loan details available.</p>
+          )}
+          <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <Button size="sm" variant="outline" onClick={closeDetailsModal}>
+              Close
+            </Button>
+          </div>
         </div>
       </Modal>
     </>

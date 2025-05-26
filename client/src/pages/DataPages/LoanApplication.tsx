@@ -1,4 +1,3 @@
-//import { useNavigate } from "react-router";
 import Input from "../../components/form/input/InputField";
 import Label from "../../components/form/Label";
 import { useCallback, useEffect, useState } from "react";
@@ -18,8 +17,9 @@ interface LoanApplicationData {
 }
 
 const LoanApplication = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
+  const [loading, setLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<LoanApplicationData>({
     amount: 0,
     purpose: "",
@@ -100,6 +100,7 @@ const LoanApplication = () => {
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
         `${apiUrl}/api/loansApplication`,
@@ -110,6 +111,8 @@ const LoanApplication = () => {
       toast.success(response.data.message);
     } catch (error) {
       console.error("Error submitting form:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,8 +166,8 @@ const LoanApplication = () => {
               />
             </div>
           </div>
-          <Button className="mt-6 w-md" type="submit">
-            Submit
+          <Button className="mt-6 w-md" type="submit" disabled={loading}>
+            {loading ? "Submitting..." : "Submit"}
           </Button>
         </form>
       </div>

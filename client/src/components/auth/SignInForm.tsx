@@ -12,6 +12,7 @@ export default function SignInForm() {
 
   console.log("URL: ", apiUrl);
 
+  const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -25,8 +26,10 @@ export default function SignInForm() {
   };
 
   const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(`${apiUrl}/api/users/login`, formData);
       console.log("Form submitted successfully:", response);
@@ -56,6 +59,8 @@ export default function SignInForm() {
       } else {
         console.error("An unexpected error occurred", err);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,8 +123,13 @@ export default function SignInForm() {
                     </Link>
                   </div> */}
                   <div>
-                    <Button className="w-full" size="sm" type="submit">
-                      Sign in
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? "Signing in..." : "Sign in"}
                     </Button>
                   </div>
                 </div>

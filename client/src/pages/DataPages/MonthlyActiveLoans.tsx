@@ -11,6 +11,7 @@ import withAuth from "../../utils/withAuth";
 import { BarLoader } from "react-spinners";
 import { ArrowBigDown, DollarSign, Percent, Wallet2 } from "lucide-react";
 import Button from "../../components/ui/button/Button";
+import Select from "../../components/form/Select";
 
 interface Loan {
   id: number;
@@ -33,18 +34,49 @@ interface Summary {
 }
 
 const MonthlyActiveLoans = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [loans, setLoans] = useState<Loan[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
 
   const officerId = localStorage.getItem("userId") || "";
-  const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+
+  const handleChange = (value: string) => {
+    if (value === "last_month") {
+      setMonth(new Date().getMonth());
+      setPage(1);
+      fetchMonthlyActiveLoans(1);
+    } else {
+      setMonth(new Date().getMonth() + 1);
+      setPage(1);
+      fetchMonthlyActiveLoans(1);
+    }
+  };
+
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const monthName = monthNames[month - 1];
+
+  console.log(monthName);
 
   const fetchMonthlyActiveLoans = useCallback(
     async (page: number) => {
@@ -57,7 +89,7 @@ const MonthlyActiveLoans = () => {
           {
             params: {
               officerId,
-              month: currentMonth,
+              month: month,
               year: currentYear,
               page,
             },
@@ -77,7 +109,7 @@ const MonthlyActiveLoans = () => {
         setLoading(false);
       }
     },
-    [officerId, currentMonth, currentYear, apiUrl]
+    [officerId, month, currentYear, apiUrl]
   );
 
   const handleNextPage = () => {
@@ -106,65 +138,82 @@ const MonthlyActiveLoans = () => {
 
   return (
     <div>
+      <h1 className="text-2xl font-bold mb-4">
+        Monthly Disbursements - {monthName} {currentYear}
+      </h1>
       {summary && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6 mb-5">
-          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              <Wallet2 className="text-gray-800 size-6 dark:text-white/90" />
-            </div>
-            <div className="flex items-end justify-between mt-5">
-              <div>
-                <span className="text-lg text-gray-500 dark:text-gray-400">
-                  Total Disbursements
-                </span>
-                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                  {summary.loan_count}
-                </h4>
+        <div>
+          <div className="flex justify-end mb-4 w-1/2">
+            <Select
+              options={[
+                { value: "this_month", label: "This Month" },
+                { value: "last_month", label: "Last Month" },
+              ]}
+              onChange={(value) => {
+                handleChange(value);
+              }}
+              placeholder="Select month"
+            />
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6 mb-5">
+            <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                <Wallet2 className="text-gray-800 size-6 dark:text-white/90" />
+              </div>
+              <div className="flex items-end justify-between mt-5">
+                <div>
+                  <span className="text-lg text-gray-500 dark:text-gray-400">
+                    Total Disbursements
+                  </span>
+                  <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
+                    {summary.loan_count}
+                  </h4>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              <DollarSign className="text-gray-800 size-6 dark:text-white/90" />
-            </div>
-            <div className="flex items-end justify-between mt-5">
-              <div>
-                <span className="text-lg text-gray-500 dark:text-gray-400">
-                  Total Amount
-                </span>
-                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                  Ksh. {Math.round(summary.total_amount_sum).toLocaleString()}
-                </h4>
+            <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                <DollarSign className="text-gray-800 size-6 dark:text-white/90" />
+              </div>
+              <div className="flex items-end justify-between mt-5">
+                <div>
+                  <span className="text-lg text-gray-500 dark:text-gray-400">
+                    Total Amount
+                  </span>
+                  <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
+                    Ksh. {Math.round(summary.total_amount_sum).toLocaleString()}
+                  </h4>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              <ArrowBigDown className="text-gray-800 size-6 dark:text-white/90" />
-            </div>
-            <div className="flex items-end justify-between mt-5">
-              <div>
-                <span className="text-lg text-gray-500 dark:text-gray-400">
-                  Deficit
-                </span>
-                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                  Ksh. {summary.deficit.toLocaleString()}
-                </h4>
+            <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                <ArrowBigDown className="text-gray-800 size-6 dark:text-white/90" />
+              </div>
+              <div className="flex items-end justify-between mt-5">
+                <div>
+                  <span className="text-lg text-gray-500 dark:text-gray-400">
+                    Deficit
+                  </span>
+                  <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
+                    Ksh. {summary.deficit.toLocaleString()}
+                  </h4>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-              <Percent className="text-gray-800 size-6 dark:text-white/90" />
-            </div>
-            <div className="flex items-end justify-between mt-5">
-              <div>
-                <span className="text-lg text-gray-500 dark:text-gray-400">
-                  Percentage
-                </span>
-                <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                  {summary.percentage}
-                </h4>
+            <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+                <Percent className="text-gray-800 size-6 dark:text-white/90" />
+              </div>
+              <div className="flex items-end justify-between mt-5">
+                <div>
+                  <span className="text-lg text-gray-500 dark:text-gray-400">
+                    Percentage
+                  </span>
+                  <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
+                    {summary.percentage}
+                  </h4>
+                </div>
               </div>
             </div>
           </div>

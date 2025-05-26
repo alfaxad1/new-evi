@@ -116,6 +116,56 @@ router.get("/loan-details", async (req, res) => {
   }
 });
 
+// Get detailed loan information by id
+router.get("/loan-details/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const baseQuery = `
+      SELECT 
+        l.id,
+        CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
+        c.national_id,
+        c.phone,
+        lp.name AS loan_product,
+        l.purpose, 
+        l.disbursement_date,
+        l.due_date,
+        l.expected_completion_date,
+        l.installment_amount,
+        l.principal,
+        l.total_interest,
+        l.total_amount,
+        l.arrears,
+        l.installments_sum,
+        l.status,
+        l.processing_fee,
+        (SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid') as paid_amount,
+        IFNULL(
+          l.remaining_balance, 
+          (l.total_amount - IFNULL((SELECT SUM(amount) FROM repayments WHERE loan_id = l.id AND status = 'paid'), 0))
+        ) as remaining_balance,
+        DATEDIFF(l.expected_completion_date, CURDATE()) as days_remaining
+      FROM loans l
+      JOIN customers c ON l.customer_id = c.id
+      JOIN loan_products lp ON l.product_id = lp.id 
+      WHERE l.id = ?
+    `;
+
+    const [loan] = await connection.query(baseQuery, [id]);
+
+    if (!loan.length) {
+      res.status(404).json({ error: "Loan not found" });
+      return;
+    }
+
+    res.status(200).json(loan[0]);
+  } catch (err) {
+    console.error("Error fetching loan details:", err);
+    res.status(500).json({ error: "Failed to retrieve loan details" });
+  }
+});
+
 //with status paid
 router.get("/loan-details/paid", async (req, res) => {
   try {
@@ -947,7 +997,7 @@ router.get("/loan-details/defaulted", async (req, res) => {
 });
 
 //get counts
-router.get("/loan-details/counts", async (req, res) => {
+router.get("/loan/counts", async (req, res) => {
   try {
     const { officerId, role } = req.query;
 

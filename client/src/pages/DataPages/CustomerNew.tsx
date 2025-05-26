@@ -59,8 +59,9 @@ type CustomerFormData = {
 };
 
 const CustomerNew: React.FC = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
+  const [loading, setLoading] = useState<boolean>(false);
   const userId = localStorage.getItem("userId");
   const initialFormData: CustomerFormData = {
     first_name: "",
@@ -303,7 +304,7 @@ const CustomerNew: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setLoading(true);
     try {
       const formDataToSend = new FormData();
 
@@ -403,6 +404,8 @@ const CustomerNew: React.FC = () => {
       const errmsg = axiosError.response?.data || axiosError.message;
       console.log(errmsg);
       toast.error("Error registering");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1017,9 +1020,10 @@ const CustomerNew: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="submit"
+              disabled={loading}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Submit Application
+              {loading ? "Submitting..." : "Submit Application"}
             </button>
           </div>
         </form>

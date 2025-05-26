@@ -15,6 +15,7 @@ import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router";
 import { BarLoader } from "react-spinners";
+import io from "socket.io-client";
 
 interface Count {
   loans_due_today: number;
@@ -47,7 +48,7 @@ const Home = () => {
     async (role: string, officerId: string): Promise<void> => {
       try {
         const response = await axios.get(
-          `${apiUrl}/api/loans/loan-details/counts?role=${role}&officerId=${officerId}`
+          `${apiUrl}/api/loans/loan/counts?role=${role}&officerId=${officerId}`
         );
         console.log("Data fetched successfully:", response.data);
         setCounts(response.data); // Set the counts object
@@ -81,6 +82,15 @@ const Home = () => {
     fetchDisbursed(officerId);
   }, [officerId, fetchDisbursed]);
 
+  const socket = io("http://localhost:8000");
+
+  useEffect(() => {
+    socket.on("paymentReceived", (payment) => {
+      alert("Payment received");
+      console.log(payment);
+    });
+  }, [socket]);
+
   if (!counts) {
     return <BarLoader color="#36D7B7" width={150} height={10} />;
   }
@@ -102,7 +112,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Pending Loans
                     </span>
-                    <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
                       {counts.pending_loan_applications}
                     </h4>
                   </div>
@@ -121,7 +131,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Disbursed
                     </span>
-                    <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
                       Ksh. {Math.round(disbursed).toLocaleString()}
                     </h4>
                   </div>
@@ -142,7 +152,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Active Loans
                     </span>
-                    <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold text-gray-800  text-title-sm dark:text-white/90">
                       {counts.active_loans}
                     </h4>
                   </div>
@@ -161,7 +171,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Rejected Loans
                     </span>
-                    <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold  text-gray-800 text-title-sm dark:text-white/90">
                       {counts.rejected_loan_applications}
                     </h4>
                   </div>
@@ -180,7 +190,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Pending Disbursement
                     </span>
-                    <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold  text-gray-800 text-title-sm dark:text-white/90">
                       {counts.pending_disbursement_loans}
                     </h4>
                   </div>
@@ -199,7 +209,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Due Today
                     </span>
-                    <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold  text-gray-800 text-title-sm dark:text-white/90">
                       {counts.loans_due_today}
                     </h4>
                   </div>
@@ -218,7 +228,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Due Tomorrow
                     </span>
-                    <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold  text-gray-800 text-title-sm dark:text-white/90">
                       {counts.loans_due_tomorrow}
                     </h4>
                   </div>
@@ -237,7 +247,7 @@ const Home = () => {
                     <span className="text-lg text-gray-500 dark:text-gray-400">
                       Due 2-7 Days
                     </span>
-                    <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                    <h4 className="mt-2 font-bold  text-gray-800 text-title-sm dark:text-white/90">
                       {counts.loans_due_2_7_days}
                     </h4>
                   </div>
@@ -257,7 +267,7 @@ const Home = () => {
                       <span className="text-lg text-gray-500 dark:text-gray-400">
                         Defaulted Loans
                       </span>
-                      <h4 className="mt-2 font-bold text-center text-gray-800 text-title-sm dark:text-white/90">
+                      <h4 className="mt-2 font-bold  text-gray-800 text-title-sm dark:text-white/90">
                         {counts.defaulted_loans}
                       </h4>
                     </div>
