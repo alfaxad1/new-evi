@@ -333,7 +333,7 @@ router.get("/monthly-active-loans", async (req, res) => {
       `
       SELECT 
         COUNT(*) as loan_count,
-        SUM(l.total_amount) as total_amount_sum
+        SUM(l.principal) as total_amount_sum
       FROM loans l
       WHERE l.officer_id = ? 
         AND l.status IN ('active', 'partially_paid')
@@ -409,11 +409,11 @@ router.get("/monthly-active-loans-admin", async (req, res) => {
         u.first_name,
         u.last_name,
         COUNT(l.id) as loan_count,
-        COALESCE(SUM(l.total_amount), 0) as total_amount_sum
+        COALESCE(SUM(l.principal), 0) as total_amount_sum
       FROM users u
       LEFT JOIN loans l ON u.id = l.officer_id
       WHERE u.role = 'officer'
-        AND l.status = 'active' OR l.status = 'partially_paid' OR l.status = 'paid'
+        AND l.status IN ('active', 'partially_paid', 'paid')
         AND MONTH(l.disbursement_date) = ?
         AND YEAR(l.disbursement_date) = ?
       GROUP BY u.id, u.first_name, u.last_name
@@ -906,7 +906,7 @@ router.get("/loan-details/disbursed-amount", async (req, res) => {
 
     const sql = `
       SELECT 
-        SUM(l.total_amount) as total_disbursed_amount
+        SUM(l.principal) as total_disbursed_amount
       FROM loans l
       WHERE l.officer_id = ?
         AND (l.status = 'active' OR l.status = 'partially_paid')
