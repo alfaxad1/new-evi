@@ -310,32 +310,32 @@ const CustomerDetails = () => {
                             </h1>
                             <p>{collateral.additional_details || "-"}</p>
                           </div>
-
-                          <div className="flex flex-col sm:flex-row gap-5">
-                            <div className="w-36 h-40 overflow-hidden border border-gray-300 rounded-xl dark:border-gray-800">
-                              <img
-                                width={128}
-                                height={128}
-                                src={guarantor.pass_photo}
-                                alt="Gurantor passport photo"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="w-64 h-40 overflow-hidden border border-gray-300 rounded-xl dark:border-gray-800">
-                              <img
-                                width={128}
-                                height={128}
-                                src={guarantor.id_photo}
-                                alt="Gurantor national ID photo"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          </div>
                         </div>
                       ))
                     ) : (
                       <p>No collaterals available.</p>
                     )}
+
+                    <div className="flex flex-col sm:flex-row gap-5">
+                      <div className="w-36 h-40 overflow-hidden border border-gray-300 rounded-xl dark:border-gray-800">
+                        <img
+                          width={128}
+                          height={128}
+                          src={guarantor.pass_photo}
+                          alt="Gurantor passport photo"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="w-64 h-40 overflow-hidden border border-gray-300 rounded-xl dark:border-gray-800">
+                        <img
+                          width={128}
+                          height={128}
+                          src={guarantor.id_photo}
+                          alt="Gurantor national ID photo"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))
               ) : (
