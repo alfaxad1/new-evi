@@ -8,6 +8,26 @@ const repaymentService = (io) => {
   router.use(express.json());
 
   router.post("/account-credit-notification", basicAuth, async (req, res) => {
+    let Amt;
+
+    if (req.body.Amount <= 200) {
+      Amt = parseInt(req.body.Amount);
+    } else {
+      const reqAmt = (parseInt(req.body.Amount) * 100.55) / 100;
+      Amt = Math.round(reqAmt);
+    }
+
+    const time = req.body.Narration.split("~")[4];
+    const paymentName = req.body.Narration.split("~")[3];
+
+    console.log("Amt", Amt);
+    console.log("time", time);
+
+    await connection.query(
+      `INSERT INTO repayment_requests (time, data, customer_name, amount) VALUES (?, ?, ?, ?)`,
+      [time, JSON.stringify(req.body), paymentName, Amt]
+    );
+
     try {
       const {
         AcctNo,
@@ -41,7 +61,7 @@ const repaymentService = (io) => {
       const mpesaCode = Narration.split("~")[0] || " ";
 
       const payment = {
-        amount: req.body.Amount,
+        amount1: req.body.Amount,
         paidDate: req.body.PostingDate,
         phoneNumber: phoneNumber,
         mpesaCode: mpesaCode,
@@ -91,10 +111,21 @@ const repaymentService = (io) => {
     let newArrears = loans[0].arrears || 0;
     let nextDueDate = new Date(loans[0].due_date);
 
-    if (paymentData.Amount < loans[0].installment_amount) {
-      newArrears += loans[0].installment_amount - paymentData.Amount;
-    } else if (paymentData.Amount > loans[0].installment_amount) {
-      newArrears -= paymentData.Amount - loans[0].installment_amount;
+    let actualAmount = parseFloat(paymentData.Amount);
+    const amount = parseFloat(paymentData.Amount);
+
+    if (actualAmount <= 200) {
+      actualAmount = amount;
+    } else {
+      actualAmount = Math.round(amount + (amount * 0.55) / 100);
+    }
+    console.log("Amount(payment data)", amount);
+    console.log("actualAmount", actualAmount);
+
+    if (actualAmount < loans[0].installment_amount) {
+      newArrears += loans[0].installment_amount - actualAmount;
+    } else if (actualAmount > loans[0].installment_amount) {
+      newArrears -= actualAmount - loans[0].installment_amount;
     }
 
     if (loans[0].installment_type === "daily") {
@@ -102,6 +133,8 @@ const repaymentService = (io) => {
     } else if (loans[0].installment_type === "weekly") {
       nextDueDate.setDate(nextDueDate.getDate() + 7);
     }
+
+    const paymentDate = paymentData.Narration.split("~")[4];
 
     await connection.query(
       `UPDATE loans 
@@ -112,13 +145,14 @@ const repaymentService = (io) => {
 
     await connection.query(
       `INSERT INTO repayments (loan_id, amount, due_date, paid_date, status, mpesa_code, created_by, created_at) 
-       VALUES (?, ?, ?, NOW(), 'paid', ?, ?, NOW())`,
+       VALUES (?, ?, ?, NOW(), 'paid', ?, ?, ?)`,
       [
         loanId,
-        paymentData.Amount,
+        actualAmount,
         nextDueDate,
         paymentData.mpesaCode,
         loans[0].officer_id,
+        paymentDate,
       ]
     );
 
@@ -126,14 +160,15 @@ const repaymentService = (io) => {
       const transactionSql = `
         INSERT INTO mpesa_transactions 
           (customer_id, loan_id, amount, type, mpesa_code, status, initiated_by, created_at) 
-        VALUES (?, ?, ?, 'repayment', ?, 'completed', ?, NOW())
+        VALUES (?, ?, ?, 'repayment', ?, 'completed', ?, ?)
       `;
       await connection.query(transactionSql, [
         loans[0].customer_id,
         loanId,
-        paymentData.Amount,
+        actualAmount,
         paymentData.mpesaCode,
         loans[0].officer_id,
+        paymentDate,
       ]);
     }
 

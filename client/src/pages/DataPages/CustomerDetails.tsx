@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import withAuth from "../../utils/withAuth";
 import axios from "axios";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
 
 interface Referee {
   name: string;
@@ -183,36 +190,52 @@ const CustomerDetails = () => {
                 </div>
               </div>
 
-              <h3 className="text-gray-800 text-xl dark:text-white/90 mt-4">
+              <h3 className="text-gray-800 text-xl dark:text-white/90 mt-6">
                 Collaterals
               </h3>
               {customerDetails.collaterals.length > 0 ? (
                 customerDetails.collaterals.map(
                   (collateral: Collateral, index: number) => (
-                    <div
-                      key={index}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"
-                    >
-                      <div>
-                        <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                          Item Name:
-                        </h1>
-                        <p>{collateral.item_name}</p>
-                      </div>
-
-                      <div>
-                        <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                          Number of Items:
-                        </h1>
-                        <p>{collateral.item_count}</p>
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                          Additional Details:
-                        </h1>
-                        <p>{collateral.additional_details || "-"}</p>
-                      </div>
+                    <div key={index} className="mb-6">
+                      <Table>
+                        {/* Table Header */}
+                        <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                          <TableRow>
+                            <TableCell
+                              isHeader
+                              className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                            >
+                              Item
+                            </TableCell>
+                            <TableCell
+                              isHeader
+                              className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                            >
+                              Number
+                            </TableCell>
+                            <TableCell
+                              isHeader
+                              className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                            >
+                              Additional Details
+                            </TableCell>
+                          </TableRow>
+                        </TableHeader>
+                        {/* Table Body */}
+                        <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                          <TableRow key={index}>
+                            <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                              {collateral.item_name}
+                            </TableCell>
+                            <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                              {collateral.item_count}
+                            </TableCell>
+                            <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                              {collateral.additional_details || "-"}
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
                     </div>
                   )
                 )
@@ -284,32 +307,51 @@ const CustomerDetails = () => {
                       <p>{guarantor.bussiness_location}</p>
                     </div>
 
-                    <h6 className="text-gray-800 text-xl dark:text-white/90 mt-4">
+                    <h6 className="text-gray-800 text-xl dark:text-white/90 mt-6">
                       Guarantor Collaterals
                     </h6>
                     {guarantor.collaterals.length > 0 ? (
                       guarantor.collaterals.map((collateral, cIndex) => (
-                        <div key={cIndex}>
-                          <div className="mb-4">
-                            <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                              Item Name:
-                            </h1>
-                            <p>{collateral.item_name}</p>
-                          </div>
-
-                          <div className="mb-4">
-                            <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                              Number of Items:
-                            </h1>
-                            <p>{collateral.item_count}</p>
-                          </div>
-
-                          <div className="mb-4">
-                            <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                              Additional Details:
-                            </h1>
-                            <p>{collateral.additional_details || "-"}</p>
-                          </div>
+                        <div key={cIndex} className="mb-4 mt-2">
+                          <Table>
+                            {/* Table Header */}
+                            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                              <TableRow>
+                                <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                  Item
+                                </TableCell>
+                                <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                  Number
+                                </TableCell>
+                                <TableCell
+                                  isHeader
+                                  className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                                >
+                                  Additional Details
+                                </TableCell>
+                              </TableRow>
+                            </TableHeader>
+                            {/* Table Body */}
+                            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                              <TableRow key={cIndex}>
+                                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                                  {collateral.item_name}
+                                </TableCell>
+                                <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                  {collateral.item_count}
+                                </TableCell>
+                                <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                                  {collateral.additional_details || "-"}
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
                         </div>
                       ))
                     ) : (
@@ -350,33 +392,54 @@ const CustomerDetails = () => {
               {customerDetails?.referees.length > 0 ? (
                 customerDetails.referees.map((referee, index) => (
                   <div key={index} className="mb-4">
-                    <div className="mb-4">
-                      <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                        Name:
-                      </h1>
-                      <p>{referee.name}</p>
-                    </div>
-
-                    <div className="mb-4">
-                      <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                        ID Number:
-                      </h1>
-                      <p>{referee.id_number}</p>
-                    </div>
-
-                    <div className="mb-4">
-                      <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                        Phone Number:
-                      </h1>
-                      <p>{referee.phone_number}</p>
-                    </div>
-
-                    <div className="mb-4">
-                      <h1 className="text-gray-800 text-md font-medium dark:text-white/90">
-                        Relationship:
-                      </h1>
-                      <p>{referee.relationship}</p>
-                    </div>
+                    <Table>
+                      {/* Table Header */}
+                      <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                        <TableRow>
+                          <TableCell
+                            isHeader
+                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                          >
+                            Name
+                          </TableCell>
+                          <TableCell
+                            isHeader
+                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                          >
+                            ID Number
+                          </TableCell>
+                          <TableCell
+                            isHeader
+                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                          >
+                            Phone Number
+                          </TableCell>
+                          <TableCell
+                            isHeader
+                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                          >
+                            Relationship
+                          </TableCell>
+                        </TableRow>
+                      </TableHeader>
+                      {/* Table Body */}
+                      <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                        <TableRow key={index}>
+                          <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                            {referee.name}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                            {referee.id_number}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                            {referee.phone_number}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                            {referee.relationship}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 ))
               ) : (
