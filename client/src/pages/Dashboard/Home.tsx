@@ -82,7 +82,7 @@ const Home = () => {
     fetchDisbursed(officerId);
   }, [officerId, fetchDisbursed]);
 
-  const socket = io("http://localhost:8000");
+  const socket = io(`${apiUrl}`);
 
   useEffect(() => {
     socket.on("paymentReceived", (payment) => {

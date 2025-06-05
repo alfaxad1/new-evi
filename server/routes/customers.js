@@ -149,7 +149,7 @@ router.delete("/:id", async (req, res) => {
       message: "Customer deactivated successfully",
     });
   } catch (err) {
-    await connection.rollback();
+    //await connection.rollback();
     console.error("Error deleting customer:", err);
     res.status(500).json({ error: "Failed to delete customer" });
   }
