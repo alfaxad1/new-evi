@@ -1,0 +1,86 @@
+name: Deploy to Shared Hosting
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      # Cache frontend dependencies
+      - name: Cache frontend dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-client-${{ hashFiles('client/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-client-
+
+      # Install frontend dependencies
+      - name: Install frontend dependencies
+        working-directory: ./client
+        run: npm install
+
+      # Build frontend
+      - name: Build frontend
+        working-directory: ./client
+        run: npm run build
+
+      # Cache backend dependencies
+      - name: Cache backend dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-server-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-server-
+
+      # Install backend dependencies
+      - name: Install backend dependencies
+        working-directory: ./server
+        run: npm install
+
+      # Deploy frontend via FTP
+      - name: Deploy frontend to server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          local-dir: "./client/dist/"
+          server-dir: "./front/"
+          exclude: |
+            **/node_modules/**
+            **/.env
+            **/uploads/**
+          log-level: verbose
+
+      # Deploy backend via FTP
+      - name: Deploy-backend to server via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 21
+          local-dir: "./server/"
+          server-dir: "./back/"
+          exclude: |
+            **/node_modules/**
+            **/.env
+            **/uploads/**
+          log-level: verbose
