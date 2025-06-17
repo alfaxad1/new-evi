@@ -401,6 +401,7 @@ router.post("/", validateLoanApplication, async (req, res) => {
       purpose,
       status = "pending",
       installmentType,
+      applicationDate,
     } = req.body;
 
     // Verify customer exists
@@ -438,14 +439,19 @@ router.post("/", validateLoanApplication, async (req, res) => {
     }
 
     // Calculate expected completion date (30 days from now)
-    const expectedCompletionDate = new Date();
+    // const expectedCompletionDate = new Date();
+    // expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
+    const expectedCompletionDate = new Date(applicationDate);
     expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
+
+    console.log("Application date:", applicationDate);
+    console.log("Expected completion date:", expectedCompletionDate);
 
     // Insert loan application
     const [result] = await connection.query(
       `INSERT INTO loans 
-      (customer_id, product_id, officer_id, phone_number, applied_amount, purpose, approval_status,  installment_type, expected_completion_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      (customer_id, product_id, officer_id, phone_number, applied_amount, purpose, approval_status,  installment_type, application_date, expected_completion_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customerId,
         productId,
@@ -455,6 +461,7 @@ router.post("/", validateLoanApplication, async (req, res) => {
         purpose,
         status,
         installmentType,
+        applicationDate,
         expectedCompletionDate,
       ]
     );

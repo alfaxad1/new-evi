@@ -13,6 +13,7 @@ import withAuth from "../../utils/withAuth";
 import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
 import { Search } from "lucide-react";
+import "@fortawesome/fontawesome-free/css/all.min.css";
 
 interface Customer {
   id: number;
@@ -164,13 +165,13 @@ const Customers = () => {
 
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     ID Number
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Address
                   </TableCell>
@@ -182,7 +183,7 @@ const Customers = () => {
                   </TableCell>
                   <TableCell
                     isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    className="hidden lg:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Created By
                   </TableCell>
@@ -219,56 +220,53 @@ const Customers = () => {
                       </div>
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {customer.national_id}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {customer.address}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {customer.phone}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <TableCell className="hidden lg:table-cell px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {customer.created_by_name}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400 text-center">
-                      <button
-                        onClick={() => {
-                          localStorage.setItem(
-                            "customerId",
-                            customer.id.toString()
-                          );
-                          navigate("/loan-application");
-                        }}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        Apply
-                      </button>
+                    <TableCell className=" overflow-auto text-gray-500 text-theme-sm dark:text-gray-400 text-center">
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => {
+                            localStorage.setItem(
+                              "customerId",
+                              customer.id.toString()
+                            );
+                            navigate("/loan-application");
+                          }}
+                          className="p-1 rounded hover:bg-gray-100"
+                        >
+                          <i className="fas fa-plus text-blue-500 hover:text-blue-700"></i>
+                        </button>
 
-                      {/* <button
-                        onClick={() => handleEditClick(customer)}
-                        className="text-blue-500 hover:text-blue-700 ml-4"
-                      >
-                        Edit
-                      </button> */}
-                      <button
-                        onClick={() => handleDelete(customer)}
-                        className="text-error-500 hover:text-error-700 ml-4"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        className="ml-4"
-                        onClick={() => {
-                          localStorage.setItem(
-                            "customerId",
-                            customer.id.toString()
-                          );
-                          navigate("/customer-details");
-                        }}
-                      >
-                        View
-                      </button>
+                        <button
+                          onClick={() => handleDelete(customer)}
+                          className="p-1 rounded hover:bg-gray-100"
+                        >
+                          <i className="fas fa-trash text-red-500 hover:text-red-700"></i>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            localStorage.setItem(
+                              "customerId",
+                              customer.id.toString()
+                            );
+                            navigate("/customer-details");
+                          }}
+                          className="p-1 rounded hover:bg-gray-100"
+                        >
+                          <i className="fas fa-eye text-yellow-500 hover:text-yellow-700"></i>
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

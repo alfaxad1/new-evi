@@ -14,6 +14,7 @@ interface LoanApplicationData {
   customerId: number;
   installmentType: string;
   officerId: number;
+  applicationDate?: string;
 }
 
 const LoanApplication = () => {
@@ -27,6 +28,7 @@ const LoanApplication = () => {
     customerId: 0,
     installmentType: "",
     officerId: 0,
+    applicationDate: "",
   });
   const [options, setOptions] = useState<{ value: string; label: string }[]>(
     []
@@ -95,6 +97,7 @@ const LoanApplication = () => {
       customerId: 0,
       installmentType: "",
       officerId: 0,
+      applicationDate: "",
     });
   };
 
@@ -162,6 +165,18 @@ const LoanApplication = () => {
                 type="text"
                 placeholder="Purpose"
                 name="purpose"
+                onChange={(e) => handleChange(e)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="applicationDate">Application Date</Label>
+
+              <Input
+                value={formData.applicationDate}
+                type="date"
+                placeholder="Application Date"
+                name="applicationDate"
                 onChange={(e) => handleChange(e)}
               />
             </div>
