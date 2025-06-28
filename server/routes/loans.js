@@ -667,6 +667,7 @@ router.get("/loan-details/due-today", async (req, res) => {
         lp.name AS loan_product,
         l.principal,
         l.total_interest,
+        l.remaining_balance,
         l.total_amount,
         l.due_date,
         l.expected_completion_date,
@@ -720,6 +721,7 @@ router.get("/loan-details/due-tomorrow", async (req, res) => {
         l.principal,
         l.total_interest,
         l.total_amount,
+        l.remaining_balance,
         l.due_date,
         l.expected_completion_date,
         DATEDIFF(l.expected_completion_date, CURRENT_DATE()) as days_remaining
@@ -788,6 +790,7 @@ router.get("/loan-details/due-2-7-days", async (req, res) => {
         l.principal,
         l.total_interest,
         l.total_amount,
+        l.remaining_balance,
         l.due_date,
         l.expected_completion_date,
         DATEDIFF(l.expected_completion_date, CURRENT_DATE()) as days_remaining
