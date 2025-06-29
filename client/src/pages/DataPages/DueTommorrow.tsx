@@ -171,7 +171,7 @@ const DueTommorrow = () => {
                       {loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.remaining_balance}
+                      {loan.remaining_balance || loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.expected_completion_date.split("T")[0]}
