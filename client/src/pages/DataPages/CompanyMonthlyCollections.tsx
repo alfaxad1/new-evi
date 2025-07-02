@@ -35,14 +35,6 @@ const CompanyMonthlyCollections = () => {
   //const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
 
-  const handleChange = (value: string) => {
-    if (value === "last_month") {
-      setMonth(new Date().getMonth());
-    } else {
-      setMonth(new Date().getMonth() + 1);
-    }
-  };
-
   const monthNames = [
     "January",
     "February",
@@ -58,9 +50,14 @@ const CompanyMonthlyCollections = () => {
     "December",
   ];
 
-  const monthName = monthNames[month - 1];
+  const monthOptions = monthNames.map((name, idx) => ({
+    value: (idx + 1).toString(),
+    label: name,
+  }));
 
-  console.log(monthName);
+  const handleChange = (value: string) => {
+    setMonth(Number(value));
+  };
 
   const fetchMonthlyCollections = useCallback(async () => {
     try {
@@ -89,19 +86,15 @@ const CompanyMonthlyCollections = () => {
   return (
     <>
       <h1 className="text-2xl font-bold mb-4">
-        Monthly Disbursements - {monthName} {currentYear}
+        Monthly Collections - {monthNames[month - 1]} {currentYear}
       </h1>
       {summary && (
         <div>
           <div className="flex justify-end mb-4 w-1/2">
             <Select
-              options={[
-                { value: "this_month", label: "This Month" },
-                { value: "last_month", label: "Last Month" },
-              ]}
-              onChange={(value) => {
-                handleChange(value);
-              }}
+              options={monthOptions}
+              onChange={handleChange}
+              defaultValue={month.toString()}
               placeholder="Select month"
             />
           </div>

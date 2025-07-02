@@ -21,7 +21,7 @@ interface ApprovedRepayment {
 }
 
 const ApprovedRepayments = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [approvedRepayments, setApprovedRepayments] = useState<
     ApprovedRepayment[]
@@ -34,25 +34,24 @@ const ApprovedRepayments = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchString, setSearchString] = useState<string>("");
 
-  const fetchApprovedRepayments = useCallback(async (
-    role: string,
-    officerId: string,
-    page: number
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `${apiUrl}/api/repayments/approved?role=${role}&officerId=${officerId}&page=${page}`
-      );
-      console.log(
-        "Approved repayments fetched successfully:",
-        response.data.data
-      );
-      setApprovedRepayments(response.data.data);
-      setTotalPages(response.data.meta.totalPages);
-    } catch (error) {
-      console.error("Error fetching approved repayments:", error);
-    }
-  }, [apiUrl]);
+  const fetchApprovedRepayments = useCallback(
+    async (role: string, officerId: string, page: number): Promise<void> => {
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/repayments/approved?role=${role}&officerId=${officerId}&page=${page}`
+        );
+        console.log(
+          "Approved repayments fetched successfully:",
+          response.data.data
+        );
+        setApprovedRepayments(response.data.data);
+        setTotalPages(response.data.meta.totalPages);
+      } catch (error) {
+        console.error("Error fetching approved repayments:", error);
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
     fetchApprovedRepayments(role, officerId, page);
@@ -71,9 +70,11 @@ const ApprovedRepayments = () => {
   };
 
   const filteredRepayments = approvedRepayments.filter((repayment) => {
-    return repayment.customer_name
-      .toLowerCase()
-      .includes(searchString.toLowerCase());
+    const search = searchString.toLowerCase();
+    return (
+      repayment.customer_name.toLowerCase().includes(search) ||
+      repayment.mpesa_code.toLowerCase().includes(search)
+    );
   });
 
   return (
