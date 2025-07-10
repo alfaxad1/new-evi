@@ -14,6 +14,7 @@ import { useModal } from "../../hooks/useModal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import { toast, ToastContainer } from "react-toastify";
+import { Check, X } from "lucide-react";
 
 interface pendingLoan {
   id: number;
@@ -31,7 +32,7 @@ interface pendingLoan {
 }
 
 const PendingLoans = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
@@ -200,12 +201,7 @@ const PendingLoans = () => {
                   >
                     Monthly Income
                   </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Loan Product
-                  </TableCell>
+
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -245,9 +241,7 @@ const PendingLoans = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.monthly_income}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.product_name}
-                    </TableCell>
+
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.amount}
                     </TableCell>
@@ -256,20 +250,20 @@ const PendingLoans = () => {
                     </TableCell>
 
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <div className="flex flex-col">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => handleApproveClick(loan.loan_id)}
-                          className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
+                          className="bg-success-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
+                          title="Approve"
                         >
-                          Approve
+                          <Check size={18} />
                         </button>
-                      </div>
-                      <div>
                         <button
                           onClick={() => handleRejectClick(loan.loan_id)}
-                          className="bg-error-500 text-white text-sm  py-1 rounded-md mr-2 w-16"
+                          className="bg-error-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
+                          title="Reject"
                         >
-                          Reject
+                          <X size={18} />
                         </button>
                       </div>
                     </TableCell>

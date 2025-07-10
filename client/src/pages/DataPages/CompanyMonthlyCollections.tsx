@@ -159,6 +159,20 @@ const CompanyMonthlyCollections = () => {
                   >
                     Total Amount
                   </TableCell>
+
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Deficit
+                  </TableCell>
+
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Percentage
+                  </TableCell>
                 </TableRow>
               </TableHeader>
 
@@ -177,6 +191,14 @@ const CompanyMonthlyCollections = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       Ksh.{" "}
                       {Math.round(officer.total_amount_sum).toLocaleString()}
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      Ksh. {700000 - Math.round(officer.total_amount_sum)}
+                    </TableCell>
+
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {((officer.total_amount_sum / 700000) * 100).toFixed(2)}%
                     </TableCell>
                   </TableRow>
                 ))}

@@ -20,6 +20,7 @@ interface DefaultedLoan {
   principal: number;
   total_interest: number;
   total_amount: number;
+  remaining_balance: number;
   due_date: string;
   expected_completion_date: string;
   default_date: string;
@@ -93,37 +94,27 @@ const Defaulted = () => {
                   isHeader
                   className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  National ID
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
                   Phone
                 </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Loan Product
-                </TableCell>
+
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Principal
                 </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Total Interest
-                </TableCell>
+
                 <TableCell
                   isHeader
                   className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Total Amount
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Balance
                 </TableCell>
                 <TableCell
                   isHeader
@@ -153,29 +144,26 @@ const Defaulted = () => {
                   <TableCell className="px-5 py-4 sm:px-6 text-start">
                     {loan.customer_name}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.national_id}
-                  </TableCell>
+
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                     {loan.phone}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.loan_product}
-                  </TableCell>
+
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {loan.principal}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.total_interest}
-                  </TableCell>
+
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {loan.total_amount}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    {loan.remaining_balance || loan.total_amount}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {loan.expected_completion_date.split("T")[0]}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.default_date}
+                    {loan.default_date.split(" ")[0]}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {loan.days_overdue}

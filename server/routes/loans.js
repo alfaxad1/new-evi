@@ -898,6 +898,7 @@ router.get("/loan-details/defaulted", async (req, res) => {
         l.due_date,
         l.status,
         l.default_date,
+        l.remaining_balance,
         l.expected_completion_date,
         DATEDIFF(CURDATE(), l.expected_completion_date) as days_overdue
       FROM loans l

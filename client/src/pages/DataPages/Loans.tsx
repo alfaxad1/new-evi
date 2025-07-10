@@ -15,7 +15,7 @@ import { useModal } from "../../hooks/useModal";
 import { Modal } from "../../components/ui/modal";
 import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
-import { Search } from "lucide-react";
+import { ArrowLeftRight, Eye, List, Search } from "lucide-react";
 import Badge from "../../components/ui/badge/Badge";
 
 interface Loan {
@@ -276,21 +276,24 @@ const Loans = () => {
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleRepay(loan.id)}
-                          className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          className="p-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          title="Repay"
                         >
-                          Repay
+                          <ArrowLeftRight size={16} />
                         </button>
                         <button
                           onClick={() => viewRepayments(loan.id)}
-                          className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                          className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                          title="Repayments"
                         >
-                          Repayments
+                          <List size={16} />
                         </button>
                         <button
                           onClick={() => viewLoanDetails(loan.id)}
-                          className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          className="p-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                          title="View"
                         >
-                          View
+                          <Eye size={16} />
                         </button>
                       </div>
                     </TableCell>
