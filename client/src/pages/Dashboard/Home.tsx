@@ -14,7 +14,7 @@ import withAuth from "../../utils/withAuth";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router";
-import { BarLoader } from "react-spinners";
+import { ClipLoader } from "react-spinners";
 
 interface Count {
   loans_due_today: number;
@@ -82,7 +82,11 @@ const Home = () => {
   }, [officerId, fetchDisbursed]);
 
   if (!counts) {
-    return <BarLoader color="#36D7B7" width={150} height={10} />;
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
   }
 
   return (

@@ -14,6 +14,7 @@ import { useModal } from "../../hooks/useModal";
 import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import { toast, ToastContainer } from "react-toastify";
+import { ClipLoader } from "react-spinners";
 
 interface pendingDisbursementLoan {
   id: number;
@@ -29,7 +30,7 @@ interface pendingDisbursementLoan {
 }
 
 const PendingDisbursement = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const { isOpen, openModal, closeModal } = useModal();
   const [pendingLoans, setPendingLoans] = useState<pendingDisbursementLoan[]>(
@@ -40,9 +41,13 @@ const PendingDisbursement = () => {
 
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPendingDisbursementLoans = useCallback(
     async (role: string, officerId: string): Promise<void> => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `${apiUrl}/api/loans/loan-details/pending-disbursement?role=${role}&officerId=${officerId}`
@@ -54,6 +59,8 @@ const PendingDisbursement = () => {
         setPendingLoans(response.data);
       } catch (error) {
         console.error("Error fetching pending disbursement loans:", error);
+      } finally {
+        setLoading(false);
       }
     },
     [apiUrl]
@@ -63,9 +70,21 @@ const PendingDisbursement = () => {
     fetchPendingDisbursementLoans(role, officerId);
   }, [role, officerId, fetchPendingDisbursementLoans]);
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
   const handleDisburseClick = (loanId: number) => {
-    setSelectedLoanId(loanId); // Set the loan ID for disbursement
-    openModal(); // Open the modal
+    setSelectedLoanId(loanId);
+    openModal();
   };
 
   const handleDisburseSave = async (e: React.FormEvent) => {
@@ -122,108 +141,114 @@ const PendingDisbursement = () => {
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
-            <Table>
-              {/* Table Header */}
-              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Customer Name
-                  </TableCell>
+            {pendingLoans && pendingLoans.length === 0 ? (
+              <div className="text-center py-4 text-blue-500">
+                No loans pending disbursement.
+              </div>
+            ) : (
+              <Table>
+                {/* Table Header */}
+                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Customer Name
+                    </TableCell>
 
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Phone Number
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Loan Product
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Principal
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Total Interest
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Total Amount
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Due Date
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Days Remaining
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHeader>
-
-              {/* Table Body */}
-              <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {pendingLoans.map((loan) => (
-                  <TableRow key={loan.id}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      {loan.customer_name}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Phone Number
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.phone}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Loan Product
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.loan_product}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Principal
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.principal}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Total Interest
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.total_interest}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Total Amount
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.total_amount}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Due Date
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.due_date.split("T")[0]}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Days Remaining
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.days_remaining}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <button
-                        onClick={() => handleDisburseClick(loan.id)}
-                        className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
-                      >
-                        Disburse
-                      </button>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Actions
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+
+                {/* Table Body */}
+                <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                  {pendingLoans.map((loan) => (
+                    <TableRow key={loan.id}>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start">
+                        {loan.customer_name}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {loan.phone}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {loan.loan_product}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.principal}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.total_interest}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.total_amount}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.due_date.split("T")[0]}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.days_remaining}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        <button
+                          onClick={() => handleDisburseClick(loan.id)}
+                          className="bg-success-500 text-white text-sm  py-1 rounded-md mb-2 w-16"
+                        >
+                          Disburse
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </div>
       </div>

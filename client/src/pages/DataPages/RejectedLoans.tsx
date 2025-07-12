@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "../../../src/components/ui/table";
 import withAuth from "../../utils/withAuth";
+import { ClipLoader } from "react-spinners";
 //import { useNavigate } from "react-router";
 interface rejectedLoans {
   id: number;
@@ -24,139 +25,164 @@ interface rejectedLoans {
 }
 
 const RejectedLoans = () => {
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [rejectedLoans, setRejectedLoans] = useState<rejectedLoans[]>([]);
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
 
-  const fetchRejectedLoans = useCallback(async (
-    role: string,
-    officerId: string
-  ): Promise<void> => {
-    try {
-      const response = await axios.get(
-        `${apiUrl}/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
-      );
-      console.log("Rejected loans fetched successfully:", response.data);
-      setRejectedLoans(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }, [apiUrl]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRejectedLoans = useCallback(
+    async (role: string, officerId: string): Promise<void> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(
+          `${apiUrl}/api/loansApplication/rejected?role=${role}&officerId=${officerId}`
+        );
+        console.log("Rejected loans fetched successfully:", response.data);
+        setRejectedLoans(response.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [apiUrl]
+  );
   useEffect(() => {
     fetchRejectedLoans(role, officerId);
   }, [role, officerId, fetchRejectedLoans]);
-  
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-screen-lg mx-auto">
         <div className="w-full overflow-x-auto">
-          <Table>
-            {/* Table Header */}
-            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-              <TableRow>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Customer Name
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  National ID
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Phone Number
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Occupation
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Address
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Monthly Income
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Loan Product
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Amount
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Purpose
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Rejection Reason
-                </TableCell>
-              </TableRow>
-            </TableHeader>
-
-            {/* Table Body */}
-            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-              {rejectedLoans.map((loan) => (
-                <TableRow key={loan.id}>
-                  <TableCell className="px-5 py-4 sm:px-6 text-start">
-                    {loan.customer_full_name}
+          {rejectedLoans && rejectedLoans.length === 0 ? (
+            <div className="text-center py-4 text-blue-500">
+              No rejected Loans.
+            </div>
+          ) : (
+            <Table>
+              {/* Table Header */}
+              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                <TableRow>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Customer Name
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.national_id}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    National ID
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.phone}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Phone Number
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    {loan.occupation}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Occupation
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.address}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Address
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.monthly_income}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Monthly Income
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.product_name}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Loan Product
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.amount}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Amount
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.purpose}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Purpose
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                    {loan.rejection_reason}
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Rejection Reason
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+
+              {/* Table Body */}
+              <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                {rejectedLoans.map((loan) => (
+                  <TableRow key={loan.id}>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start">
+                      {loan.customer_full_name}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {loan.national_id}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {loan.phone}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      {loan.occupation}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.address}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.monthly_income}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.product_name}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.amount}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.purpose}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {loan.rejection_reason}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
     </div>
