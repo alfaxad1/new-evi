@@ -8,6 +8,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { ClipLoader } from "react-spinners";
+import { useNavigate, useLocation } from "react-router";
 
 interface Referee {
   name: string;
@@ -82,9 +84,22 @@ const CustomerDetails = () => {
       console.error("No customer ID found in local storage.");
     }
   }, [apiUrl, customerId, fetchCustomerDetails]);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleBack = () => {
+    const page = location.state?.page || 1;
+    navigate(`/customers?page=${page}`);
+  };
 
   return (
     <div>
+      <button
+        onClick={handleBack}
+        className="mb-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded transition-colors"
+      >
+        &larr; Back to Customers
+      </button>
       <h1 className="text-gray-800 text-title-sm dark:text-white/90 text-center mb-4">
         Customer Details
       </h1>
@@ -390,40 +405,40 @@ const CustomerDetails = () => {
                 Referees
               </h3>
               {customerDetails?.referees.length > 0 ? (
-                customerDetails.referees.map((referee, index) => (
-                  <div key={index} className="mb-4">
-                    <Table>
-                      {/* Table Header */}
-                      <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                        <TableRow>
-                          <TableCell
-                            isHeader
-                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
-                          >
-                            Name
-                          </TableCell>
-                          <TableCell
-                            isHeader
-                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
-                          >
-                            ID Number
-                          </TableCell>
-                          <TableCell
-                            isHeader
-                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
-                          >
-                            Phone Number
-                          </TableCell>
-                          <TableCell
-                            isHeader
-                            className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
-                          >
-                            Relationship
-                          </TableCell>
-                        </TableRow>
-                      </TableHeader>
-                      {/* Table Body */}
-                      <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                <div className="mb-4">
+                  <Table>
+                    {/* Table Header */}
+                    <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                      <TableRow>
+                        <TableCell
+                          isHeader
+                          className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                        >
+                          Name
+                        </TableCell>
+                        <TableCell
+                          isHeader
+                          className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                        >
+                          ID Number
+                        </TableCell>
+                        <TableCell
+                          isHeader
+                          className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                        >
+                          Phone Number
+                        </TableCell>
+                        <TableCell
+                          isHeader
+                          className="px-5 py-3 font-medium text-grey-500 text-start text-theme-xs dark:text-gray-400"
+                        >
+                          Relationship
+                        </TableCell>
+                      </TableRow>
+                    </TableHeader>
+                    {/* Table Body */}
+                    <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                      {customerDetails.referees.map((referee, index) => (
                         <TableRow key={index}>
                           <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                             {referee.name}
@@ -438,10 +453,10 @@ const CustomerDetails = () => {
                             {referee.relationship}
                           </TableCell>
                         </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
-                ))
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
                 <p>No referees available.</p>
               )}
@@ -449,7 +464,9 @@ const CustomerDetails = () => {
           </div>
         </div>
       ) : (
-        <p>Loading...</p>
+        <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+          <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+        </div>
       )}
     </div>
   );
