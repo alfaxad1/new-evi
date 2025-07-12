@@ -15,6 +15,7 @@ import Label from "../../components/form/Label";
 import Input from "../../components/form/input/InputField";
 import { toast, ToastContainer } from "react-toastify";
 import { Check, X } from "lucide-react";
+import { ClipLoader } from "react-spinners";
 
 interface pendingLoan {
   id: number;
@@ -44,9 +45,13 @@ const PendingLoans = () => {
   const [disbursedAmount, setDisbursedAmount] = useState<number | null>(null);
   const [reason, setReason] = useState<string>("");
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPendingLoans = useCallback(
     async (role: string, officerId: string): Promise<void> => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `${apiUrl}/api/loansApplication/pending?role=${role}&officerId=${officerId}`
@@ -55,6 +60,8 @@ const PendingLoans = () => {
         setPendingLoans(response.data.data);
       } catch (error) {
         console.error("Error fetching pending loans:", error);
+      } finally {
+        setLoading(false);
       }
     },
     [apiUrl]
@@ -63,6 +70,18 @@ const PendingLoans = () => {
   useEffect(() => {
     fetchPendingLoans(role, officerId);
   }, [role, officerId, fetchPendingLoans]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   const handleApproveClick = (applicationId: number) => {
     setSelectedApplicationId(applicationId); // Set the application ID for approval
@@ -172,105 +191,111 @@ const PendingLoans = () => {
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
-            <Table>
-              {/* Table Header */}
-              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Customer Name
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    National ID
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Phone Number
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Monthly Income
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Amount
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Purpose
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHeader>
-
-              {/* Table Body */}
-              <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {pendingLoans.map((loan) => (
-                  <TableRow key={loan.id}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      {loan.customer_full_name}
+            {pendingLoans && pendingLoans.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                No pending loans found.
+              </div>
+            ) : (
+              <Table>
+                {/* Table Header */}
+                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Customer Name
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.national_id}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      National ID
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {loan.phone}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Phone Number
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.monthly_income}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Monthly Income
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.amount}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Amount
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.purpose}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Purpose
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleApproveClick(loan.loan_id)}
-                          className="bg-success-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
-                          title="Approve"
-                        >
-                          <Check size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleRejectClick(loan.loan_id)}
-                          className="bg-error-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
-                          title="Reject"
-                        >
-                          <X size={18} />
-                        </button>
-                      </div>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Actions
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+
+                {/* Table Body */}
+                <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                  {pendingLoans.map((loan) => (
+                    <TableRow key={loan.id}>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start">
+                        {loan.customer_full_name}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {loan.national_id}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {loan.phone}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.monthly_income}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.amount}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.purpose}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleApproveClick(loan.loan_id)}
+                            className="bg-success-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
+                            title="Approve"
+                          >
+                            <Check size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleRejectClick(loan.loan_id)}
+                            className="bg-error-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
+                            title="Reject"
+                          >
+                            <X size={18} />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import Button from "../../components/ui/button/Button";
 import { Search } from "lucide-react";
+import { ClipLoader } from "react-spinners";
 
 interface pendingRepayment {
   id: number;
@@ -42,9 +43,13 @@ const PendingRepayments = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchString, setSearchString] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPendingRepayments = useCallback(
     async (page: number): Promise<void> => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `${apiUrl}/api/repayments/pending?page=${page}`
@@ -55,6 +60,8 @@ const PendingRepayments = () => {
         setTotalPages(response.data.meta.totalPages);
       } catch (error) {
         console.error("Error fetching pending repayments:", error);
+      } finally {
+        setLoading(false);
       }
     },
     [apiUrl]
@@ -62,6 +69,18 @@ const PendingRepayments = () => {
   useEffect(() => {
     fetchPendingRepayments(page);
   }, [role, officerId, page, fetchPendingRepayments]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   const resolveRepayment = async (repaymentId: number) => {
     try {
@@ -116,81 +135,87 @@ const PendingRepayments = () => {
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
-            <Table>
-              {/* Table Header */}
-              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Amount
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Mpesa Code
-                  </TableCell>
+            {pendingRepayments && pendingRepayments.length === 0 ? (
+              <div className="text-center py-4 text-blue-500">
+                No loans pending disbursement.
+              </div>
+            ) : (
+              <Table>
+                {/* Table Header */}
+                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Amount
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Mpesa Code
+                    </TableCell>
 
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Name
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Date
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Time
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHeader>
-
-              {/* Table Body */}
-              <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {filteredRepayments.map((repayment) => (
-                  <TableRow key={repayment.id}>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.amount}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Name
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.mpesa_code}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Date
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.payment_name}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Time
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.created_at.split("T")[0]}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {repayment.created_at.split("T")[1].split(".")[0]}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      <button
-                        onClick={() => resolveRepayment(repayment.id)}
-                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                      >
-                        Resolve
-                      </button>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Actions
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+
+                {/* Table Body */}
+                <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                  {filteredRepayments.map((repayment) => (
+                    <TableRow key={repayment.id}>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {repayment.amount}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {repayment.mpesa_code}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {repayment.payment_name}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {repayment.created_at.split("T")[0]}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {repayment.created_at.split("T")[1].split(".")[0]}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        <button
+                          onClick={() => resolveRepayment(repayment.id)}
+                          className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        >
+                          Resolve
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
           {/* Pagination Controls */}
           <div className="flex justify-between items-center mt-4">

@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "../../../src/components/ui/table";
 import withAuth from "../../utils/withAuth";
-import { BarLoader } from "react-spinners";
+import { ClipLoader } from "react-spinners";
 import { ArrowBigDown, DollarSign, Percent, Wallet2 } from "lucide-react";
 import Button from "../../components/ui/button/Button";
 import Select from "../../components/form/Select";
@@ -129,7 +129,11 @@ const MonthlyActiveLoans = () => {
   }, [page, fetchMonthlyActiveLoans]);
 
   if (loading) {
-    return <BarLoader color="#36D7B7" width={150} height={4} />;
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
   }
 
   if (error) {

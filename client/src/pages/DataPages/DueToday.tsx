@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "../../../src/components/ui/table";
 import withAuth from "../../utils/withAuth";
-import { BarLoader } from "react-spinners";
+import { ClipLoader } from "react-spinners";
 import Button from "../../components/ui/button/Button";
 
 interface DueLoan {
@@ -83,7 +83,11 @@ const DueToday = () => {
   };
 
   if (loading) {
-    return <BarLoader color="#36D7B7" width={150} height={4} />;
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
   }
 
   if (error) {
@@ -94,12 +98,8 @@ const DueToday = () => {
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-screen-lg mx-auto">
         <div className="w-full overflow-x-auto">
-          {loading ? (
-            <BarLoader color="#36D7B7" width={150} height={4} />
-          ) : error ? (
-            <div className="text-red-500 text-center py-4">{error}</div>
-          ) : dueLoans && dueLoans.length === 0 ? (
-            <div className="text-center py-4 text-gray-500">
+          {dueLoans && dueLoans.length === 0 ? (
+            <div className="text-center py-4 text-blue-500">
               No loans are due today.
             </div>
           ) : (
