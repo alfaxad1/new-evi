@@ -14,6 +14,7 @@ import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
 import { Search } from "lucide-react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { ClipLoader } from "react-spinners";
 
 interface Customer {
   id: number;
@@ -44,9 +45,13 @@ const Customers = () => {
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const [searchString, setSearchString] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(
     async (role: string, userId: string, page: number): Promise<void> => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `${apiUrl}/api/customers?role=${role}&userId=${userId}&page=${page}`
@@ -56,6 +61,8 @@ const Customers = () => {
         setTotalPages(response.data.meta.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     },
     [apiUrl]
@@ -63,6 +70,18 @@ const Customers = () => {
   useEffect(() => {
     fetchData(role, userId, page);
   }, [role, userId, page, fetchData]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -152,126 +171,132 @@ const Customers = () => {
         <div></div>
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
-            <Table>
-              {/* Table Header */}
-              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Name
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    ID Number
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Address
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Phone Number
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="hidden lg:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Created By
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-theme-xs dark:text-gray-400 text-center"
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHeader>
-              {/* Table Body */}
-              <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {filteredCustomers.map((customer) => (
-                  <TableRow key={customer.id}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 overflow-hidden rounded-full">
-                          <img
-                            width={40}
-                            height={40}
-                            src={customer.passport_photo}
-                            alt={customer.first_name}
-                          />
-                        </div>
-                        <div>
-                          <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                            {customer.first_name} {customer.last_name}
-                          </span>
-                          <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                            {customer.occupation}
-                          </span>
-                        </div>
-                      </div>
+            {filteredCustomers && filteredCustomers.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                No pending loans found.
+              </div>
+            ) : (
+              <Table>
+                {/* Table Header */}
+                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Name
                     </TableCell>
 
-                    <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {customer.national_id}
+                    <TableCell
+                      isHeader
+                      className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      ID Number
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {customer.address}
+                    <TableCell
+                      isHeader
+                      className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Address
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {customer.phone}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Phone Number
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {customer.created_by_name}
+                    <TableCell
+                      isHeader
+                      className="hidden lg:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Created By
                     </TableCell>
-                    <TableCell className=" overflow-auto text-gray-500 text-theme-sm dark:text-gray-400 text-center">
-                      <div className="flex space-x-1">
-                        <button
-                          onClick={() => {
-                            localStorage.setItem(
-                              "customerId",
-                              customer.id.toString()
-                            );
-                            navigate("/loan-application");
-                          }}
-                          className="p-1 rounded hover:bg-gray-100"
-                        >
-                          <i className="fas fa-plus text-blue-500 hover:text-blue-700"></i>
-                        </button>
-
-                        <button
-                          onClick={() => handleDelete(customer)}
-                          className="p-1 rounded hover:bg-gray-100"
-                        >
-                          <i className="fas fa-trash text-red-500 hover:text-red-700"></i>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            localStorage.setItem(
-                              "customerId",
-                              customer.id.toString()
-                            );
-                            navigate("/customer-details");
-                          }}
-                          className="p-1 rounded hover:bg-gray-100"
-                        >
-                          <i className="fas fa-eye text-yellow-500 hover:text-yellow-700"></i>
-                        </button>
-                      </div>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-theme-xs dark:text-gray-400 text-center"
+                    >
+                      Actions
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                {/* Table Body */}
+                <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                  {filteredCustomers.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 overflow-hidden rounded-full">
+                            <img
+                              width={40}
+                              height={40}
+                              src={customer.passport_photo}
+                              alt={customer.first_name}
+                            />
+                          </div>
+                          <div>
+                            <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                              {customer.first_name} {customer.last_name}
+                            </span>
+                            <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
+                              {customer.occupation}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {customer.national_id}
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {customer.address}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {customer.phone}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {customer.created_by_name}
+                      </TableCell>
+                      <TableCell className=" overflow-auto text-gray-500 text-theme-sm dark:text-gray-400 text-center">
+                        <div className="flex space-x-1">
+                          <button
+                            onClick={() => {
+                              localStorage.setItem(
+                                "customerId",
+                                customer.id.toString()
+                              );
+                              navigate("/loan-application");
+                            }}
+                            className="p-1 rounded hover:bg-gray-100"
+                          >
+                            <i className="fas fa-plus text-blue-500 hover:text-blue-700"></i>
+                          </button>
+
+                          <button
+                            onClick={() => handleDelete(customer)}
+                            className="p-1 rounded hover:bg-gray-100"
+                          >
+                            <i className="fas fa-trash text-red-500 hover:text-red-700"></i>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              localStorage.setItem(
+                                "customerId",
+                                customer.id.toString()
+                              );
+                              navigate("/customer-details");
+                            }}
+                            className="p-1 rounded hover:bg-gray-100"
+                          >
+                            <i className="fas fa-eye text-yellow-500 hover:text-yellow-700"></i>
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
 
             {/* <Modal
               isOpen={isOpen}

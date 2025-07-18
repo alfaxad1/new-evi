@@ -17,6 +17,7 @@ import Button from "../../components/ui/button/Button";
 import { toast, ToastContainer } from "react-toastify";
 import { ArrowLeftRight, Eye, List, Search } from "lucide-react";
 import Badge from "../../components/ui/badge/Badge";
+import { ClipLoader } from "react-spinners";
 
 interface Loan {
   id: number;
@@ -74,9 +75,16 @@ const Loans = () => {
   const [repaymentsData, setRepaymentsData] = useState<Repayment[]>([]);
   const [loansData, setLoansData] = useState<Loan[]>([]);
   const [details, setDetails] = useState<Loan | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [amount, setAmount] = useState<string>("");
+  const [mpesaCode, setMpesaCode] = useState<string>("");
+  const [searchString, setSearchString] = useState<string>("");
 
   const fetchLoans = useCallback(
     async (role: string, officerId: string, page: number): Promise<void> => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `${apiUrl}/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
@@ -86,6 +94,8 @@ const Loans = () => {
         setTotalPages(response.data.meta.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     },
     [apiUrl]
@@ -94,6 +104,18 @@ const Loans = () => {
   useEffect(() => {
     fetchLoans(role, officerId, page);
   }, [fetchLoans, role, officerId, page]);
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   const handleNextPage = () => {
     if (page < totalPages) {
@@ -106,10 +128,6 @@ const Loans = () => {
       setPage(page - 1);
     }
   };
-
-  const [amount, setAmount] = useState<string>("");
-  const [mpesaCode, setMpesaCode] = useState<string>("");
-  const [searchString, setSearchString] = useState<string>("");
 
   const handleRepay = (loanId: number) => {
     setSelectedLoanId(loanId);
@@ -195,112 +213,120 @@ const Loans = () => {
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
-            <Table>
-              {/* Table Header */}
-              <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                <TableRow>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Customer Name
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Loan Amount
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Balance
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Status
-                  </TableCell>
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Due Date
-                  </TableCell>
-
-                  <TableCell
-                    isHeader
-                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHeader>
-
-              {/* Table Body */}
-              <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {filteredLoans.map((loan) => (
-                  <TableRow key={loan.id}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      {loan.customer_name}
+            {filteredLoans && filteredLoans.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                No pending loans found.
+              </div>
+            ) : (
+              <Table>
+                {/* Table Header */}
+                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+                  <TableRow>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Customer Name
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.total_amount}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Loan Amount
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.remaining_balance}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <Badge
-                        color={loan.status === "active" ? "success" : "warning"}
-                      >
-                        {loan.status === "partially_paid"
-                          ? "partially paid"
-                          : loan.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.expected_completion_date
-                        ? loan.expected_completion_date.split("T")[0]
-                        : "N/A"}
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Balance
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleRepay(loan.id)}
-                          className="p-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                          title="Repay"
-                        >
-                          <ArrowLeftRight size={16} />
-                        </button>
-                        <button
-                          onClick={() => viewRepayments(loan.id)}
-                          className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                          title="Repayments"
-                        >
-                          <List size={16} />
-                        </button>
-                        <button
-                          onClick={() => viewLoanDetails(loan.id)}
-                          className="p-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                          title="View"
-                        >
-                          <Eye size={16} />
-                        </button>
-                      </div>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Status
+                    </TableCell>
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Due Date
+                    </TableCell>
+
+                    <TableCell
+                      isHeader
+                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                    >
+                      Actions
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+
+                {/* Table Body */}
+                <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                  {filteredLoans.map((loan) => (
+                    <TableRow key={loan.id}>
+                      <TableCell className="px-5 py-4 sm:px-6 text-start">
+                        {loan.customer_name}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.total_amount}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.remaining_balance}
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        <Badge
+                          color={
+                            loan.status === "active" ? "success" : "warning"
+                          }
+                        >
+                          {loan.status === "partially_paid"
+                            ? "partially paid"
+                            : loan.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        {loan.expected_completion_date
+                          ? loan.expected_completion_date.split("T")[0]
+                          : "N/A"}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleRepay(loan.id)}
+                            className="p-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            title="Repay"
+                          >
+                            <ArrowLeftRight size={16} />
+                          </button>
+                          <button
+                            onClick={() => viewRepayments(loan.id)}
+                            className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                            title="Repayments"
+                          >
+                            <List size={16} />
+                          </button>
+                          <button
+                            onClick={() => viewLoanDetails(loan.id)}
+                            className="p-2 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            title="View"
+                          >
+                            <Eye size={16} />
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </div>
           {/* Pagination Controls */}
           <div className="flex justify-between items-center mt-4">
