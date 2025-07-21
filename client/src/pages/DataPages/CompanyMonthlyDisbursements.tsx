@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { Calendar1 } from "lucide-react";
+import { Banknote, Calendar1, PercentIcon } from "lucide-react";
 import Select from "../../components/form/Select";
 import { Line } from "react-chartjs-2";
 import {
@@ -21,6 +21,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { ClipLoader } from "react-spinners";
 
 ChartJS.register(
   LineElement,
@@ -51,6 +52,8 @@ const CompanyMonthlyDisbursements = () => {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const [monthlyData, setMonthlyData] = useState<number[]>(Array(12).fill(0));
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const officerId = localStorage.getItem("userId") || "";
   const currentYear = new Date().getFullYear();
 
@@ -82,6 +85,8 @@ const CompanyMonthlyDisbursements = () => {
   };
 
   const fetchMonthlyCollections = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(
         `${apiUrl}/api/loans/monthly-active-loans-admin`,
@@ -97,6 +102,8 @@ const CompanyMonthlyDisbursements = () => {
       setSummary(response.data.summary);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   }, [officerId, month, currentYear, apiUrl]);
 
@@ -150,7 +157,7 @@ const CompanyMonthlyDisbursements = () => {
           color: "#1F2937",
           font: {
             size: 16,
-            weight: "bold" as const, // Explicitly type weight as 'bold'
+            weight: "bold" as const,
           },
           padding: 20,
         },
@@ -176,7 +183,7 @@ const CompanyMonthlyDisbursements = () => {
           color: "#1F2937",
           font: {
             size: 16,
-            weight: "bold" as const, // Explicitly type weight as 'bold'
+            weight: "bold" as const,
           },
           padding: 20,
         },
@@ -198,7 +205,7 @@ const CompanyMonthlyDisbursements = () => {
           color: "#1F2937",
           font: {
             size: 16,
-            weight: "bold" as const, // Explicitly type weight as 'bold'
+            weight: "bold" as const,
           },
           padding: 20,
         },
@@ -225,6 +232,18 @@ const CompanyMonthlyDisbursements = () => {
       },
     },
   };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+        <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -277,7 +296,7 @@ const CompanyMonthlyDisbursements = () => {
 
                 {/* Icon Container */}
                 <div className="relative z-10 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:from-cyan-800/50 dark:to-sky-800/50">
-                  <Calendar1 className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
+                  <Banknote className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
                 </div>
 
                 {/* Content */}
@@ -300,7 +319,7 @@ const CompanyMonthlyDisbursements = () => {
 
                 {/* Icon Container */}
                 <div className="relative z-10 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:from-cyan-800/50 dark:to-sky-800/50">
-                  <Calendar1 className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
+                  <PercentIcon className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
                 </div>
 
                 {/* Content */}
@@ -329,7 +348,7 @@ const CompanyMonthlyDisbursements = () => {
 
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Monthly Disbursements Trend (2025)
+            Disbursements Trend {currentYear}
           </h2>
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 h-[400px]">
             <Line data={chartData} options={chartOptions} />

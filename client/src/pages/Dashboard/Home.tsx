@@ -259,14 +259,14 @@ const Home = () => {
               </div>
             </Link>
 
-            {/* Metric Item: Due Tomorrow */}
+            
             <Link to="due-tommorrow">
               <div className="group relative overflow-hidden rounded-3xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-50 p-6 transition-all duration-300 hover:border-cyan-300 hover:shadow-2xl hover:shadow-cyan-100 hover:-translate-y-1 dark:border-cyan-800 dark:from-cyan-900/20 dark:to-sky-900/20 dark:hover:border-cyan-700 md:p-7">
-                {/* Decorative Pattern */}
+               
                 <div className="absolute -right-8 -bottom-8 h-24 w-24 rounded-full bg-cyan-100 opacity-20 transition-all duration-300 group-hover:scale-150 group-hover:opacity-30 dark:bg-cyan-700/30"></div>
                 <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-cyan-200 opacity-30 transition-all duration-300 group-hover:scale-125 group-hover:opacity-40 dark:bg-cyan-600/40"></div>
 
-                {/* Icon Container */}
+                
                 <div className="relative z-10 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:from-cyan-800/50 dark:to-sky-800/50">
                   <Calendar1 className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
                 </div>
