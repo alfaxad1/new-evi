@@ -92,7 +92,7 @@ const CompanyMonthlyCollections = () => {
     try {
       const responses = await Promise.all(
         monthNames.map((_, idx) =>
-          axios.get(`${apiUrl}/api/loans/monthly-active-loans-admin`, {
+          axios.get(`${apiUrl}/api/repayments/monthly-approved-admin`, {
             params: { officerId, month: idx + 1, year: currentYear },
           })
         )
