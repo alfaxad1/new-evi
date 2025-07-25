@@ -1,4 +1,4 @@
-import { DollarSign, Wallet } from "lucide-react";
+import { Banknote, PercentIcon, Wallet2 } from "lucide-react";
 import withAuth from "../../utils/withAuth";
 import {
   Table,
@@ -244,36 +244,81 @@ const CompanyMonthlyCollections = () => {
               placeholder="Select month"
             />
           </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6 mb-5">
-            <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-                <Wallet className="text-gray-800 size-6 dark:text-white/90" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="group relative overflow-hidden rounded-3xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-50 p-6 transition-all duration-300 hover:border-cyan-300 hover:shadow-2xl hover:shadow-cyan-100 hover:-translate-y-1 dark:border-cyan-800 dark:from-cyan-900/20 dark:to-sky-900/20 dark:hover:border-cyan-700 md:p-7">
+              {/* Decorative Pattern */}
+              <div className="absolute -right-8 -bottom-8 h-24 w-24 rounded-full bg-cyan-100 opacity-20 transition-all duration-300 group-hover:scale-150 group-hover:opacity-30 dark:bg-cyan-700/30"></div>
+              <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-cyan-200 opacity-30 transition-all duration-300 group-hover:scale-125 group-hover:opacity-40 dark:bg-cyan-600/40"></div>
+
+              {/* Icon Container */}
+              <div className="relative z-10 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:from-cyan-800/50 dark:to-sky-800/50">
+                <Wallet2 className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
               </div>
-              <div className="flex items-end justify-between mt-5">
-                <div>
-                  <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Number of Loans
-                  </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                    {summary.number.toLocaleString()}
-                  </h4>
-                </div>
+
+              {/* Content */}
+              <div className="relative z-10 mt-6">
+                <span className="text-lg font-medium text-cyan-600 dark:text-cyan-400 transition-colors duration-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">
+                  Number of Repayments
+                </span>
+                <h4 className="mt-3 font-bold text-gray-800 text-3xl dark:text-white/90 transition-all duration-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                  {summary.number.toLocaleString()}
+                </h4>
               </div>
+
+              {/* Hover Glow Effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/0 via-cyan-400/5 to-cyan-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
             </div>
-            <div className="rounded-2xl border border-gray-300 bg-green-200 p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-              <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-                <DollarSign className="text-gray-800 size-6 dark:text-white/90" />
+            <div className="group relative overflow-hidden rounded-3xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-50 p-6 transition-all duration-300 hover:border-cyan-300 hover:shadow-2xl hover:shadow-cyan-100 hover:-translate-y-1 dark:border-cyan-800 dark:from-cyan-900/20 dark:to-sky-900/20 dark:hover:border-cyan-700 md:p-7">
+              {/* Decorative Pattern */}
+              <div className="absolute -right-8 -bottom-8 h-24 w-24 rounded-full bg-cyan-100 opacity-20 transition-all duration-300 group-hover:scale-150 group-hover:opacity-30 dark:bg-cyan-700/30"></div>
+              <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-cyan-200 opacity-30 transition-all duration-300 group-hover:scale-125 group-hover:opacity-40 dark:bg-cyan-600/40"></div>
+
+              {/* Icon Container */}
+              <div className="relative z-10 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:from-cyan-800/50 dark:to-sky-800/50">
+                <Banknote className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
               </div>
-              <div className="flex items-end justify-between mt-5">
-                <div>
-                  <span className="text-lg text-gray-500 dark:text-gray-400">
-                    Total Collections
-                  </span>
-                  <h4 className="mt-2 font-bold text-gray-800 text-center text-title-sm dark:text-white/90">
-                    Ksh. {summary.total_amount_sum.toLocaleString()}
-                  </h4>
-                </div>
+              {/* Content */}
+              <div className="relative z-10 mt-6">
+                <span className="text-lg font-medium text-cyan-600 dark:text-cyan-400 transition-colors duration-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">
+                  Total Collections
+                </span>
+                <h4 className="mt-3 font-bold text-gray-800 text-3xl dark:text-white/90 transition-all duration-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                  Ksh. {summary.total_amount_sum.toLocaleString()}
+                </h4>
               </div>
+
+              {/* Hover Glow Effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/0 via-cyan-400/5 to-cyan-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+            </div>
+            <div className="group relative overflow-hidden rounded-3xl border border-cyan-200 bg-gradient-to-br from-cyan-50 to-sky-50 p-6 transition-all duration-300 hover:border-cyan-300 hover:shadow-2xl hover:shadow-cyan-100 hover:-translate-y-1 dark:border-cyan-800 dark:from-cyan-900/20 dark:to-sky-900/20 dark:hover:border-cyan-700 md:p-7">
+              {/* Decorative Pattern */}
+              <div className="absolute -right-8 -bottom-8 h-24 w-24 rounded-full bg-cyan-100 opacity-20 transition-all duration-300 group-hover:scale-150 group-hover:opacity-30 dark:bg-cyan-700/30"></div>
+              <div className="absolute -left-4 -top-4 h-16 w-16 rounded-full bg-cyan-200 opacity-30 transition-all duration-300 group-hover:scale-125 group-hover:opacity-40 dark:bg-cyan-600/40"></div>
+
+              {/* Icon Container */}
+              <div className="relative z-10 flex items-center justify-center w-14 h-14 bg-gradient-to-br from-cyan-100 to-sky-100 rounded-2xl shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl dark:from-cyan-800/50 dark:to-sky-800/50">
+                <PercentIcon className="text-cyan-700 size-7 transition-all duration-300 group-hover:scale-110 dark:text-cyan-300" />
+              </div>
+
+              {/* Content */}
+              <div className="relative z-10 mt-6">
+                <span className="text-lg font-medium text-cyan-600 dark:text-cyan-400 transition-colors duration-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300">
+                  Collection Percentage
+                </span>
+                <h4 className="mt-3 font-bold text-gray-800 text-3xl dark:text-white/90 transition-all duration-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                  {officers.length > 0
+                    ? (
+                        (summary.total_amount_sum /
+                          (700000 * officers.length)) *
+                        100
+                      ).toFixed(2)
+                    : "0.00"}
+                  %
+                </h4>
+              </div>
+
+              {/* Hover Glow Effect */}
+              <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/0 via-cyan-400/5 to-cyan-400/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
             </div>
           </div>
         </div>
