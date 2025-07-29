@@ -175,10 +175,10 @@ const Defaulted = () => {
                       {loan.remaining_balance || loan.total_amount}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.expected_completion_date.split("T")[0]}
+                      {loan.expected_completion_date}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.default_date.split(" ")[0]}
+                      {loan.default_date}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.days_overdue}
