@@ -28,6 +28,10 @@ const repayments = require("./routes/repayments");
 const transactions = require("./routes/mpesaTransactions");
 const customerRoutes = require("./routes/customerRoutes");
 const repaymentService = require("./services/repaymentService");
+const { setupCronJobs } = require("./services/scheduler");
+const connection = require("./config/dbConnection");
+
+setupCronJobs(connection);
 
 app.use("/api/users", users);
 app.use("/api/customers", customers);

@@ -10,6 +10,8 @@ import {
 import withAuth from "../../utils/withAuth";
 import { ClipLoader } from "react-spinners";
 import Button from "../../components/ui/button/Button";
+import { toast, ToastContainer } from "react-toastify";
+import { Repeat } from "lucide-react";
 
 interface DueLoan {
   id: number;
@@ -70,6 +72,34 @@ const DueToday = () => {
     fetchDueLoans();
   }, [fetchDueLoans]);
 
+  const handleRollOver = async (loanId: number) => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log("Token:", token);
+      if (!token) {
+        toast.error("You are not authorized ");
+        return;
+      }
+      const response = await axios.post(
+        `${apiUrl}/api/loans/roll-over/${loanId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success(response.data);
+      fetchDueLoans();
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.error || "Failed to roll over loan.");
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    }
+  };
+
   const handleNextPage = () => {
     if (page < totalPages) {
       setPage(page + 1);
@@ -96,6 +126,7 @@ const DueToday = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <ToastContainer position="bottom-right" />
       <div className="max-w-screen-lg mx-auto">
         <div className="w-full overflow-x-auto">
           {dueLoans && dueLoans.length === 0 ? (
@@ -146,6 +177,12 @@ const DueToday = () => {
                   >
                     Due Date
                   </TableCell>
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
+                  >
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHeader>
 
@@ -173,6 +210,17 @@ const DueToday = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.expected_completion_date.split("T")[0]}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleRollOver(loan.id)}
+                          className="bg-blue-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
+                          title="Roll Over"
+                        >
+                          <Repeat size={18} className="" />
+                        </button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

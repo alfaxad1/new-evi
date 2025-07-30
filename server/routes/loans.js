@@ -589,6 +589,57 @@ router.post("/", validateLoanData, async (req, res) => {
   }
 });
 
+//roll-over loan
+router.post("/roll-over/:loanId", async (req, res) => {
+  const { loanId } = req.params;
+
+  try {
+    //1.fetch the loan details
+    const [loan] = await connection.query(
+      `SELECT * FROM loans WHERE id = ? AND 
+          status IN('active', 'partially_paid') AND 
+          (total_amount - remaining_balance) > total_interest AND 
+          DATE(expected_completion_date) = CURRENT_DATE()`,
+      [loanId]
+    );
+
+    if (loan.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "Loan not found or not eligible for roll-over" });
+    }
+    //2.change the loan status to 'active'
+    await connection.query(
+      `UPDATE loans SET 
+          status = 'active', 
+          arrears = 0.00,
+          rolled_over = 1,
+          expected_completion_date = DATE_ADD(CURRENT_DATE(), INTERVAL 30 DAY),
+          due_date = DATE_ADD(CURRENT_DATE(), INTERVAL 1 DAY)  
+        WHERE id = ?`,
+      [loanId]
+    );
+    //3.create a rolled_over record in the rolled_over_loans table
+    await connection.query(
+      `INSERT INTO ROLLED_OVER_LOANS 
+          (PREV_LOAN_ID, PREV_PRINCIPAL, BAL_AT_ROLLOVER, PREV_TOTAL_AMOUNT, PREV_APPL_DATE, PREV_EXP_COMPL_DATE, ROLLOVER_DATE) 
+          VALUES (?, ?, ?, ?, ?, ?, CURRENT_DATE())`,
+      [
+        loan[0].id,
+        loan[0].principal,
+        loan[0].remaining_balance,
+        loan[0].total_amount,
+        loan[0].application_date,
+        loan[0].expected_completion_date,
+      ]
+    );
+    res.status(200).json({ message: "Loan rolled over successfully" });
+  } catch (err) {
+    console.error("Error rolling over:", err);
+    res.status(500).json({ error: "Failed to roll over" });
+  }
+});
+
 // Update loan information
 router.put("/:id", validateLoanData, async (req, res) => {
   try {
