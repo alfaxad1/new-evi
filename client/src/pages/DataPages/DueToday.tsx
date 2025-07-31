@@ -75,7 +75,7 @@ const DueToday = () => {
   const handleRollOver = async (loanId: number) => {
     try {
       const token = localStorage.getItem("token");
-      console.log("Token:", token);
+
       if (!token) {
         toast.error("You are not authorized ");
         return;
@@ -88,8 +88,8 @@ const DueToday = () => {
           },
         }
       );
-
-      toast.success(response.data);
+      console.log("Roll Over Response:", response.data.message);
+      toast.success("Loan rolled over successfully.");
       fetchDueLoans();
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
