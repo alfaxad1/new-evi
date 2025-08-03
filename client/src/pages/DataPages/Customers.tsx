@@ -29,15 +29,58 @@ interface Customer {
   created_by_name: string;
 }
 
+interface ConfirmProps {
+  isOpen: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  message?: string;
+  title?: string;
+}
+
+const ConfirmDialog: React.FC<ConfirmProps> = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  message = "Are you sure you want to delete this customer?",
+  title = "Confirmation",
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50"
+      style={{ backdropFilter: "blur(5px)" }}
+    >
+      <div className="bg-[#E6F0FA] p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+        <p className="text-gray-700 mb-6">{message}</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 bg-white text-gray-800 rounded hover:bg-gray-100 focus:outline-none border border-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-[#4A90E2] text-white rounded hover:bg-[#357ABD] focus:outline-none"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Customers = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-
   const navigate = useNavigate();
 
   const [customerData, setCustomerData] = useState<Customer[]>([]);
-  // const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
-  //   null
-  // );
+  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(
+    null
+  );
 
   const role: string = JSON.parse(localStorage.getItem("role") || "''");
   const userId: string = localStorage.getItem("userId") || "";
@@ -47,6 +90,7 @@ const Customers = () => {
   const [searchString, setSearchString] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const fetchData = useCallback(
     async (role: string, userId: string, page: number): Promise<void> => {
@@ -61,19 +105,21 @@ const Customers = () => {
         setTotalPages(response.data.meta.totalPages);
       } catch (error) {
         console.error("Error fetching data:", error);
+        setError("Failed to fetch customer data");
       } finally {
         setLoading(false);
       }
     },
     [apiUrl]
   );
+
   useEffect(() => {
     fetchData(role, userId, page);
   }, [role, userId, page, fetchData]);
 
   if (loading) {
     return (
-      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
         <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
       </div>
     );
@@ -95,54 +141,40 @@ const Customers = () => {
     }
   };
 
-  // const handleEditClick = (customer: Customer) => {
-  //   setSelectedCustomer(customer); // Set the selected customer
-  //   openModal(); // Open the modal
-  // };
+  const handleDeleteClick = (customer: Customer) => {
+    setSelectedCustomerId(customer.id);
+    setShowConfirm(true);
+  };
 
-  // const handleInputChange = (field: keyof Customer, value: string) => {
-  //   if (selectedCustomer) {
-  //     setSelectedCustomer({ ...selectedCustomer, [field]: value });
-  //   }
-  // };
+  const handleConfirmDelete = async () => {
+    if (selectedCustomerId === null) return;
 
-  // const handleSaveClick = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (selectedCustomer) {
-  //     try {
-  //       const response = await axios.put(
-  //         `${apiUrl}/api/customers/${selectedCustomer.id}`,
-  //         selectedCustomer
-  //       );
-  //       console.log("Customer updated successfully:", response.data);
-  //       //fetchData(); // Refresh the data
-  //       //closeModal(); // Close the modal
-  //     } catch (error) {
-  //       console.error("Error updating customer:", error);
-  //     }
-  //   }
-  // };
-
-  const handleDelete = async (customer: Customer) => {
-    if (window.confirm("Are you sure you want to delete this customer?")) {
-      try {
-        const response = await axios.delete(
-          `${apiUrl}/api/customers/${customer.id}`
+    try {
+      const response = await axios.delete(
+        `${apiUrl}/api/customers/${selectedCustomerId}`
+      );
+      console.log("Customer deleted successfully:", response.data);
+      toast.success(response.data.message);
+      fetchData(role, userId, page); // Refresh the data
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        console.error("Error deleting:", err.response.data);
+        toast.error(
+          err.response.data.error || err.response.data.errors?.[0]?.msg
         );
-        console.log("Customer deleted successfully:", response.data);
-        toast.success(response.data.message);
-        fetchData(role, userId, page); // Refresh the data
-      } catch (err: unknown) {
-        if (axios.isAxiosError(err) && err.response) {
-          console.error("Error saving:", err.response.data);
-          toast.error(
-            err.response.data.error || err.response.data.errors?.[0]?.msg
-          );
-        } else {
-          console.error("An unexpected error occurred", err);
-        }
+      } else {
+        console.error("An unexpected error occurred", err);
+        toast.error("An unexpected error occurred");
       }
+    } finally {
+      setShowConfirm(false);
+      setSelectedCustomerId(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirm(false);
+    setSelectedCustomerId(null);
   };
 
   const filteredCustomers = customerData.filter((customer) => {
@@ -154,6 +186,12 @@ const Customers = () => {
 
   return (
     <div>
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        message={`Are you sure you want to delete this customer ?`}
+      />
       <ToastContainer position="bottom-right" />
       <div className="relative mb-4">
         <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -168,12 +206,11 @@ const Customers = () => {
         />
       </div>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-        <div></div>
         <div className="max-w-screen-lg mx-auto">
           <div className="w-full overflow-x-auto">
             {filteredCustomers && filteredCustomers.length === 0 ? (
               <div className="text-center py-4 text-gray-500">
-                No pending loans found.
+                No customers found.
               </div>
             ) : (
               <Table>
@@ -186,7 +223,6 @@ const Customers = () => {
                     >
                       Name
                     </TableCell>
-
                     <TableCell
                       isHeader
                       className="hidden sm:table-cell px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -243,7 +279,6 @@ const Customers = () => {
                           </div>
                         </div>
                       </TableCell>
-
                       <TableCell className="hidden sm:table-cell px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {customer.national_id}
                       </TableCell>
@@ -256,7 +291,7 @@ const Customers = () => {
                       <TableCell className="hidden lg:table-cell px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                         {customer.created_by_name}
                       </TableCell>
-                      <TableCell className=" overflow-auto text-gray-500 text-theme-sm dark:text-gray-400 text-center">
+                      <TableCell className="overflow-auto text-gray-500 text-theme-sm dark:text-gray-400 text-center">
                         <div className="flex space-x-1">
                           <button
                             onClick={() => {
@@ -267,17 +302,17 @@ const Customers = () => {
                               navigate("/loan-application");
                             }}
                             className="p-1 rounded hover:bg-gray-100"
+                            title="Add Loan"
                           >
                             <i className="fas fa-plus text-blue-500 hover:text-blue-700"></i>
                           </button>
-
                           <button
-                            onClick={() => handleDelete(customer)}
+                            onClick={() => handleDeleteClick(customer)}
                             className="p-1 rounded hover:bg-gray-100"
+                            title="Delete Customer"
                           >
                             <i className="fas fa-trash text-red-500 hover:text-red-700"></i>
                           </button>
-
                           <button
                             onClick={() => {
                               localStorage.setItem(
@@ -287,6 +322,7 @@ const Customers = () => {
                               navigate("/customer-details");
                             }}
                             className="p-1 rounded hover:bg-gray-100"
+                            title="View Details"
                           >
                             <i className="fas fa-eye text-yellow-500 hover:text-yellow-700"></i>
                           </button>
@@ -297,93 +333,6 @@ const Customers = () => {
                 </TableBody>
               </Table>
             )}
-
-            {/* <Modal
-              isOpen={isOpen}
-              onClose={closeModal}
-              className="max-w-[700px] m-4"
-            >
-              <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
-                <div className="px-2 pr-14">
-                  <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-                    Edit Information
-                  </h4>
-                </div>
-                <form
-                  className="flex flex-col"
-                  onSubmit={(e) => handleSaveClick(e)}
-                >
-                  <div className="custom-scrollbar h-[450px] overflow-y-auto px-2 pb-3">
-                    <div className="mt-7">
-                      <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                        <div className="col-span-2 lg:col-span-1">
-                          <Label>First Name</Label>
-                          <Input
-                            type="text"
-                            value={selectedCustomer?.first_name || ""}
-                            onChange={(e) =>
-                              handleInputChange("first_name", e.target.value)
-                            }
-                          />
-                        </div>
-
-                        <div className="col-span-2 lg:col-span-1">
-                          <Label>Phone</Label>
-                          <Input
-                            type="text"
-                            value={selectedCustomer?.phone || ""}
-                            onChange={(e) =>
-                              handleInputChange("phone", e.target.value)
-                            }
-                          />
-                        </div>
-
-                        <div className="col-span-2 lg:col-span-1">
-                          <Label>ID Number</Label>
-                          <Input
-                            type="text"
-                            value={selectedCustomer?.national_id || ""}
-                            onChange={(e) =>
-                              handleInputChange("national_id", e.target.value)
-                            }
-                          />
-                        </div>
-
-                        <div className="col-span-2 lg:col-span-1">
-                          <Label>Address</Label>
-                          <Input
-                            type="text"
-                            value={selectedCustomer?.address || ""}
-                            onChange={(e) =>
-                              handleInputChange("address", e.target.value)
-                            }
-                          />
-                        </div>
-
-                        <div className="col-span-2">
-                          <Label>Occupation</Label>
-                          <Input
-                            type="text"
-                            value={selectedCustomer?.occupation || ""}
-                            onChange={(e) =>
-                              handleInputChange("occupation", e.target.value)
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-                    <Button size="sm" variant="outline" onClick={closeModal}>
-                      Close
-                    </Button>
-                    <Button size="sm" type="submit">
-                      Save Changes
-                    </Button>
-                  </div>
-                </form>
-              </div>
-            </Modal> */}
           </div>
         </div>
 

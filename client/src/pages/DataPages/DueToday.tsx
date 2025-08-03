@@ -27,6 +27,50 @@ interface DueLoan {
   remaining_balance: number;
 }
 
+interface ConfirmProps {
+  isOpen: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  message?: string;
+  title?: string;
+}
+
+const ConfirmDialog: React.FC<ConfirmProps> = ({
+  isOpen,
+  onConfirm,
+  onCancel,
+  message = "Are you sure you want to roll over this loan?",
+  title = "Confirmation",
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50"
+      style={{ backdropFilter: "blur(5px)" }}
+    >
+      <div className="bg-[#E6F0FA] p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+        <p className="text-gray-700 mb-6">{message}</p>
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 bg-white text-gray-800 rounded hover:bg-gray-100 focus:outline-none border border-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-[#4A90E2] text-white rounded hover:bg-[#357ABD] focus:outline-none"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DueToday = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -35,6 +79,8 @@ const DueToday = () => {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [selectedLoanId, setSelectedLoanId] = useState<number | null>(null);
 
   const role = JSON.parse(localStorage.getItem("role") || "''");
   const officerId = localStorage.getItem("userId") || "";
@@ -56,7 +102,6 @@ const DueToday = () => {
       );
       setDueLoans(response.data.data);
       setTotalPages(response.data.meta.totalPages);
-      //setMeta(response.data.meta);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data?.error || "Failed to fetch loans.");
@@ -72,32 +117,49 @@ const DueToday = () => {
     fetchDueLoans();
   }, [fetchDueLoans]);
 
-  const handleRollOver = async (loanId: number) => {
+  const handleRolloverClick = (loanId: number) => {
+    setSelectedLoanId(loanId);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmRollover = async () => {
+    if (selectedLoanId === null) return;
+
     try {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        toast.error("You are not authorized ");
+        toast.error("You are not authorized");
         return;
       }
+
       const response = await axios.post(
-        `${apiUrl}/api/loans/roll-over/${loanId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        `${apiUrl}/api/loans/roll-over/${selectedLoanId}`,
+        {}
+        // {
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        // }
       );
-      console.log("Roll Over Response:", response.data.message);
-      toast.success("Loan rolled over successfully.");
       fetchDueLoans();
+      console.log("Roll Over Response:", response.data.message);
+      toast.success("Loan rolled over successfully");
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         toast.error(error.response?.data?.error || "Failed to roll over loan.");
       } else {
         toast.error("An unexpected error occurred.");
       }
+    } finally {
+      setShowConfirm(false);
+      setSelectedLoanId(null);
     }
+  };
+
+  const handleCancelRollover = () => {
+    setShowConfirm(false);
+    setSelectedLoanId(null);
   };
 
   const handleNextPage = () => {
@@ -114,7 +176,7 @@ const DueToday = () => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0  backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
         <ClipLoader color="#36D7B7" size={50} speedMultiplier={0.8} />
       </div>
     );
@@ -126,6 +188,13 @@ const DueToday = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <ConfirmDialog
+        isOpen={showConfirm}
+        onConfirm={handleConfirmRollover}
+        onCancel={handleCancelRollover}
+        message={`Are you sure you want to roll over this loan?`}
+        title="Roll Over Loan"
+      />
       <ToastContainer position="bottom-right" />
       <div className="max-w-screen-lg mx-auto">
         <div className="w-full overflow-x-auto">
@@ -144,21 +213,18 @@ const DueToday = () => {
                   >
                     Customer Name
                   </TableCell>
-
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Phone
                   </TableCell>
-
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
                   >
                     Principal
                   </TableCell>
-
                   <TableCell
                     isHeader
                     className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -193,20 +259,19 @@ const DueToday = () => {
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       {loan.customer_name}
                     </TableCell>
-
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {loan.phone}
                     </TableCell>
-
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.principal}
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.total_amount}
+                      {loan.principal.toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                      {loan.remaining_balance || loan.total_amount}
+                      {loan.total_amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                      {(
+                        loan.remaining_balance || loan.total_amount
+                      ).toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       {loan.expected_completion_date.split("T")[0]}
@@ -214,11 +279,11 @@ const DueToday = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleRollOver(loan.id)}
-                          className="bg-blue-500 text-white p-2 rounded-md w-10 flex items-center justify-center"
+                          onClick={() => handleRolloverClick(loan.id)}
+                          className="bg-blue-500 text-white p-2 rounded-md w-10 flex items-center justify-center hover:bg-blue-600 transition-colors"
                           title="Roll Over"
                         >
-                          <Repeat size={18} className="" />
+                          <Repeat size={18} />
                         </button>
                       </div>
                     </TableCell>

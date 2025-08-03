@@ -1,7 +1,7 @@
 const express = require("express");
 const connection = require("../config/dbConnection");
 const {
-  calculateRemainingBalance,
+  
   checkMissedPayments,
   updateLoanStatus,
 } = require("../services/loanService.js");
@@ -560,15 +560,5 @@ router.post("/check-missed-payments", async (req, res) => {
   }
 });
 
-// calculateRemainingBalance in GET endpoints
-router.get("/:id/balance", async (req, res) => {
-  try {
-    const balance = await calculateRemainingBalance(req.params.id, connection);
-    res.status(200).json({ remaining_balance: balance });
-  } catch (err) {
-    console.error("Error calculating balance:", err);
-    res.status(500).json({ error: "Error calculating remaining balance" });
-  }
-});
 
 module.exports = router;

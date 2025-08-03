@@ -112,8 +112,14 @@ const LoanApplication = () => {
       resetForm();
       console.log("Form submitted successfully:", response);
       toast.success(response.data.message);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error submitting form:", error);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error.response?.data.errors[0].msg;
+        toast.error(axiosError);
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }

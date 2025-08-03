@@ -17,6 +17,9 @@ const validateLoanApplication = [
   body("purpose")
     .isLength({ min: 5 })
     .withMessage("Purpose must be at least 10 characters"),
+  body("applicationDate")
+    .isDate({ format: "MM-DD-YYYY" })
+    .withMessage("Date is required and must be in MM-DD-YYYY format"),
   body("status")
     .optional()
     .isIn(["pending", "approved", "rejected"])
@@ -332,6 +335,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
           total_interest = ?, 
           total_amount = ?, 
           installment_amount = ?, 
+          remaining_balance = ?,
           due_date = ?, 
           status = 'pending_disbursement' 
       WHERE id = ?`,
@@ -342,6 +346,7 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
         totalAmount,
         installmentAmount,
         firstDueDate,
+        totalAmount,
         req.params.id,
       ]
     );
@@ -438,19 +443,12 @@ router.post("/", validateLoanApplication, async (req, res) => {
       return res.status(404).json({ error: "Loan product not found" });
     }
 
-    // Calculate expected completion date (30 days from now)
-    // const expectedCompletionDate = new Date();
-    // expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
-    const expectedCompletionDate = new Date(applicationDate);
-    expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
-
     console.log("Application date:", applicationDate);
-    console.log("Expected completion date:", expectedCompletionDate);
 
     // Insert loan application
     const [result] = await connection.query(
       `INSERT INTO loans 
-      (customer_id, product_id, officer_id, phone_number, applied_amount, purpose, approval_status,  installment_type, application_date, expected_completion_date)
+      (customer_id, product_id, officer_id, phone_number, applied_amount, purpose, approval_status,  installment_type, application_date)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customerId,
@@ -462,7 +460,6 @@ router.post("/", validateLoanApplication, async (req, res) => {
         status,
         installmentType,
         applicationDate,
-        expectedCompletionDate,
       ]
     );
 

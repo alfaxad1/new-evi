@@ -1,23 +1,3 @@
-const calculateRemainingBalance = async (loanId, connection) => {
-  const [results] = await connection.query(
-    `
-      SELECT 
-        l.total_amount,
-        IFNULL(SUM(r.amount), 0) as total_paid
-      FROM loans l
-      LEFT JOIN repayments r ON r.loan_id = l.id AND r.status = 'paid'
-      WHERE l.id = ?
-      GROUP BY l.id
-    `,
-    [loanId]
-  );
-
-  if (results.length === 0) return 0;
-
-  const { total_amount, total_paid } = results[0];
-  return total_amount - total_paid;
-};
-
 const checkLoanDefaults = async (connection) => {
   try {
     // Find loans past their expected completion date
@@ -74,8 +54,13 @@ const updateLoanStatus = async (loanId, connection) => {
 
     const installmentsSum = installments[0].installments_sum;
 
-    // Calculate remaining balance
-    const remainingBalance = total_amount - installmentsSum;
+    const [balance] = await connection.query(
+      "SELECT remaining_balance FROM loans WHERE loan_id = ?",
+      [loanId]
+    );
+    const remainingBalance =
+      balance[0].remaining_balance || total_amount - installmentsSum;
+    console.log("Remaining balance:", remainingBalance);
 
     // Determine new loan status
     let newStatus = loan[0].status;
@@ -162,7 +147,6 @@ const checkMissedPayments = async (connection) => {
 };
 
 module.exports = {
-  calculateRemainingBalance,
   checkLoanDefaults,
   updateLoanStatus,
   checkMissedPayments,

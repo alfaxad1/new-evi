@@ -426,10 +426,18 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
       officer_id: initiatedBy,
     } = loan[0];
 
-    // 2. Update loan status to active
+    const expectedCompletionDate = new Date(applicationDate);
+    expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
+    console.log("Expected completion date:", expectedCompletionDate);
+
+    /**
+     * update the loan status to 'active' and set disbursement date to now
+     * set the expected completion date to 30 days from now
+     * set remaining balance to total amount
+     */
     const [updateResult] = await connection.query(
-      "UPDATE loans SET status = 'active', disbursement_date = NOW(), mpesa_code = ? WHERE id = ? AND status = 'pending_disbursement'",
-      [mpesaCode, req.params.loanId]
+      "UPDATE loans SET status = 'active', disbursement_date = NOW(),expected_completion_date = ?,  mpesa_code = ?, remaining_balance = ? WHERE id = ? AND status = 'pending_disbursement'",
+      [expectedCompletionDate, mpesaCode, amount, req.params.loanId]
     );
 
     if (updateResult.affectedRows === 0) {
@@ -597,9 +605,11 @@ router.post("/roll-over/:loanId", async (req, res) => {
     //1.fetch the loan details
     const [loan] = await connection.query(
       `SELECT * FROM loans WHERE id = ? AND 
-          status IN('active', 'partially_paid') AND 
-          (total_amount - remaining_balance) > total_interest AND 
-          DATE(expected_completion_date) = CURRENT_DATE()`,
+          status IN('active', 'partially_paid', 'defaulted') AND 
+          (total_amount - remaining_balance) > total_interest AND
+          rolled_over = 0 AND 
+          DATE(expected_completion_date) = CURRENT_DATE() OR
+          expected_completion_date < CURDATE()`,
       [loanId]
     );
 

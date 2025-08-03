@@ -109,6 +109,7 @@ export default function App() {
               path="/company-monthly-disbursements"
               element={<CompanyMonthlyDisbursements />}
             />
+
             <Route
               path="/company-monthly-collections"
               element={<CompanyMonthlyCollections />}
