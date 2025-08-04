@@ -17,9 +17,6 @@ const validateLoanApplication = [
   body("purpose")
     .isLength({ min: 5 })
     .withMessage("Purpose must be at least 10 characters"),
-  body("applicationDate")
-    .isDate({ format: "MM-DD-YYYY" })
-    .withMessage("Date is required and must be in MM-DD-YYYY format"),
   body("status")
     .optional()
     .isIn(["pending", "approved", "rejected"])
@@ -449,7 +446,7 @@ router.post("/", validateLoanApplication, async (req, res) => {
     const [result] = await connection.query(
       `INSERT INTO loans 
       (customer_id, product_id, officer_id, phone_number, applied_amount, purpose, approval_status,  installment_type, application_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         customerId,
         productId,
