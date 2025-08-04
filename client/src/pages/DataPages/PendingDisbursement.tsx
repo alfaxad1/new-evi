@@ -231,7 +231,7 @@ const PendingDisbursement = () => {
                         {loan.total_amount}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                        {loan.due_date.slice(0, 10)}
+                        {loan.due_date}
                       </TableCell>
                       <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                         {loan.days_remaining}
