@@ -88,8 +88,12 @@ const PendingLoans = () => {
     setIsApproveModalOpen(true); // Open the approval modal
   };
 
+  // const removeLoanFromList = (loanId: number) => {
+  //   setPendingLoans((prev) => prev.filter((loan) => loan.id !== loanId));
+  // };
+
   const handleApproveSave = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
     if (!selectedApplicationId || !disbursedAmount || disbursedAmount <= 0) {
       alert("Please enter a valid disbursed amount.");
       return;
@@ -112,6 +116,8 @@ const PendingLoans = () => {
       );
       console.log("Loan approved successfully");
       fetchPendingLoans(role, officerId);
+      //removeLoanFromList(selectedApplicationId);
+      toast.success("Loan approved successfully");
       setIsApproveModalOpen(false);
       setDisbursedAmount(null);
       setSelectedApplicationId(null);
@@ -309,18 +315,18 @@ const PendingLoans = () => {
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Enter Disbursed Amount
+              Disburse Amount
             </h4>
           </div>
           <form
             className="flex flex-col"
             onSubmit={(e) => handleApproveSave(e)}
           >
-            <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
+            <div className="custom-scrollbar overflow-y-auto px-2 pb-3">
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Disbursed Amount</Label>
+                    <Label>Enter Disbursed Amount</Label>
                     <Input
                       type="number"
                       value={disbursedAmount || ""}
@@ -332,7 +338,7 @@ const PendingLoans = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-center">
               <Button size="sm" type="submit">
                 Save Changes
               </Button>
@@ -350,11 +356,11 @@ const PendingLoans = () => {
             </h4>
           </div>
           <form className="flex flex-col" onSubmit={(e) => handleRejectSave(e)}>
-            <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
+            <div className="custom-scrollbar  overflow-y-auto px-2 pb-3">
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>Reason</Label>
+                    <Label>Rejection Reason</Label>
                     <Input
                       type="text"
                       value={reason}
@@ -364,7 +370,7 @@ const PendingLoans = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-center">
               <Button size="sm" type="submit">
                 Save Changes
               </Button>

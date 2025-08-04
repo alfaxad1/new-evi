@@ -87,6 +87,10 @@ const PendingDisbursement = () => {
     openModal();
   };
 
+  const removeLoanFromList = (loanId: number) => {
+    setPendingLoans((prev) => prev.filter((loan) => loan.id !== loanId));
+  };
+
   const handleDisburseSave = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission
     if (!selectedLoanId || !mpesaCode) {
@@ -101,6 +105,7 @@ const PendingDisbursement = () => {
         toast.error("You are not authorized ");
         return;
       }
+
       await axios.put(
         `${apiUrl}/api/loans/disburse/${selectedLoanId}`,
         { mpesaCode },
@@ -111,10 +116,11 @@ const PendingDisbursement = () => {
         }
       );
       console.log("Loan disbursed successfully");
-      fetchPendingDisbursementLoans(role, officerId); // Refresh the list after disbursement
-      closeModal(); // Close the modal
-      setMpesaCode(""); // Clear the Mpesa code input
-      setSelectedLoanId(null); // Clear the selected loan ID
+      removeLoanFromList(selectedLoanId);
+      toast.success("Loan disbursed successfully");
+      closeModal();
+      setMpesaCode("");
+      setSelectedLoanId(null);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         closeModal();
@@ -187,18 +193,7 @@ const PendingDisbursement = () => {
                     >
                       Total Amount
                     </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                    >
-                      Due Date
-                    </TableCell>
-                    <TableCell
-                      isHeader
-                      className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
-                    >
-                      Days Remaining
-                    </TableCell>
+
                     <TableCell
                       isHeader
                       className="px-5 py-3 font-medium text-blue-500 text-start text-theme-xs dark:text-gray-400"
@@ -230,12 +225,7 @@ const PendingDisbursement = () => {
                       <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                         {loan.total_amount}
                       </TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                        {loan.due_date}
-                      </TableCell>
-                      <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                        {loan.days_remaining}
-                      </TableCell>
+
                       <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                         <button
                           onClick={() => handleDisburseClick(loan.id)}
@@ -255,7 +245,7 @@ const PendingDisbursement = () => {
 
       {/* Disburse Modal */}
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[400px] m-4">
-        <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
+        <div className="no-scrollbar relative w-auto max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
               Enter Mpesa Code
@@ -265,7 +255,7 @@ const PendingDisbursement = () => {
             className="flex flex-col"
             onSubmit={(e) => handleDisburseSave(e)}
           >
-            <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
+            <div className="custom-scrollbar overflow-y-auto px-2 pb-3">
               <div className="mt-7">
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-1">
                   <div className="col-span-2 lg:col-span-1">
@@ -279,7 +269,7 @@ const PendingDisbursement = () => {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
+            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-center">
               <Button size="sm" type="submit">
                 Save Changes
               </Button>

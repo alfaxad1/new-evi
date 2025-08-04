@@ -86,9 +86,14 @@ const Loans = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(
-          `${apiUrl}/api/loans/loan-details?role=${role}&officerId=${officerId}&page=${page}`
-        );
+        const response = await axios.get(`${apiUrl}/api/loans/loan-details`, {
+          params: {
+            role,
+            officerId,
+            page,
+            limit: 10,
+          },
+        });
         console.log("Data fetched successfully:", response.data);
         setLoansData(response.data.data);
         setTotalPages(response.data.meta.totalPages);
@@ -369,7 +374,11 @@ const Loans = () => {
               Repayments for Loan
             </h4>
           </div>
-          {repaymentsData ? (
+          {repaymentsData && repaymentsData.length === 0 ? (
+            <div className="text-center py-4 text-blue-500">
+              No repayments found for this loan
+            </div>
+          ) : (
             <div className="mt-4">
               <Table>
                 <TableHeader>
@@ -420,8 +429,6 @@ const Loans = () => {
                 </TableBody>
               </Table>
             </div>
-          ) : (
-            <p className="mt-4">No repayments found for this loan.</p>
           )}
           <div className="flex justify-end mt-4">
             <Button size="sm" variant="outline" onClick={closeViewModal}>

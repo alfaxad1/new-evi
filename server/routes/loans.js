@@ -37,7 +37,7 @@ const validateLoanData = [
 // Get detailed loan information
 router.get("/loan-details", async (req, res) => {
   try {
-    const { officerId, role, page = 1, limit = 10 } = req.query;
+    const { officerId, role, page = 1, limit } = req.query;
     const offset = (page - 1) * limit;
 
     let baseQuery = `
@@ -409,7 +409,7 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
 
     // 1. Fetch the customer_id and total_amount associated with the loan
     const [loan] = await connection.query(
-      "SELECT customer_id, total_amount, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
+      "SELECT customer_id, total_amount, installment_type, officer_id FROM loans WHERE id = ? AND status = 'pending_disbursement'",
       [req.params.loanId]
     );
 
@@ -423,10 +423,11 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
     const {
       customer_id: customerId,
       total_amount: amount,
+      installment_type: installmentType,
       officer_id: initiatedBy,
     } = loan[0];
 
-    const expectedCompletionDate = new Date(applicationDate);
+    const expectedCompletionDate = new Date();
     expectedCompletionDate.setDate(expectedCompletionDate.getDate() + 30);
     console.log("Expected completion date:", expectedCompletionDate);
 
@@ -434,10 +435,29 @@ router.put("/disburse/:loanId", authorizeRoles(["admin"]), async (req, res) => {
      * update the loan status to 'active' and set disbursement date to now
      * set the expected completion date to 30 days from now
      * set remaining balance to total amount
+     * Calculate and set installment amount and first due date
      */
+
+    let installmentAmount, firstDueDate;
+    if (installmentType === "daily") {
+      installmentAmount = amount / 30; // Daily installment
+      firstDueDate = new Date();
+      firstDueDate.setDate(firstDueDate.getDate() + 1);
+    } else if (installmentType === "weekly") {
+      installmentAmount = amount / 4; // Weekly installment
+      firstDueDate = new Date();
+      firstDueDate.setDate(firstDueDate.getDate() + 7);
+    }
     const [updateResult] = await connection.query(
-      "UPDATE loans SET status = 'active', disbursement_date = NOW(),expected_completion_date = ?,  mpesa_code = ?, remaining_balance = ? WHERE id = ? AND status = 'pending_disbursement'",
-      [expectedCompletionDate, mpesaCode, amount, req.params.loanId]
+      "UPDATE loans SET status = 'active', disbursement_date = NOW(),expected_completion_date = ?,  mpesa_code = ?, remaining_balance = ?, due_date = ?, installment_amount = ? WHERE id = ? AND status = 'pending_disbursement'",
+      [
+        expectedCompletionDate,
+        mpesaCode,
+        amount,
+        firstDueDate,
+        installmentAmount,
+        req.params.loanId,
+      ]
     );
 
     if (updateResult.affectedRows === 0) {

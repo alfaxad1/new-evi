@@ -312,37 +312,19 @@ router.put("/approve/:id", authorizeRoles(["admin"]), async (req, res) => {
     console.log("Total amount:", totalAmount);
     console.log("Processing fee:", processingFee);
 
-    // Calculate installment amount and first due date
-    let installmentAmount, firstDueDate;
-    if (installment_type === "daily") {
-      installmentAmount = totalAmount / 30; // Daily installment
-      firstDueDate = new Date();
-      firstDueDate.setDate(firstDueDate.getDate() + 1);
-    } else if (installment_type === "weekly") {
-      installmentAmount = totalAmount / 4; // Weekly installment
-      firstDueDate = new Date();
-      firstDueDate.setDate(firstDueDate.getDate() + 7);
-    }
-
     // Update loan record
     const [loanUpdateResult] = await connection.query(
       `UPDATE loans 
       SET principal = ?, 
           processing_fee = ?,
           total_interest = ?, 
-          total_amount = ?, 
-          installment_amount = ?, 
-          remaining_balance = ?,
-          due_date = ?, 
+          total_amount = ?,         
           status = 'pending_disbursement' 
       WHERE id = ?`,
       [
         disbursedAmount,
         processingFee,
         interestAmount,
-        totalAmount,
-        installmentAmount,
-        firstDueDate,
         totalAmount,
         req.params.id,
       ]
